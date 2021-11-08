@@ -1,7 +1,7 @@
 name: cc
 defaults:
   run:
-    working-directory: lang
+    working-directory: lang_study
     
 on:
   push:
