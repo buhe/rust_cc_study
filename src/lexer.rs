@@ -67,7 +67,7 @@ impl Default for Type {
     fn default() -> Type {
         Type {
             ty: Ctype::default(),
-            size: 4,
+            size: 4,// 只支持到 32 位，把它改成 64？
             align: 4,
         }
     }

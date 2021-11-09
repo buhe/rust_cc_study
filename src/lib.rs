@@ -1,10 +1,15 @@
 pub mod lexer;
+pub mod parser;
+pub mod ast;
 
 use lexer::tokenize;
+use parser::parsing;
 use std::io::{Result, Write};
 
 pub fn run(path: String, _output: &mut impl Write) -> Result<()> {
   let t = tokenize(path);
   println!("Tokens: {:#?}", t);
+   let p = parsing(&t);
+     println!("Prog: {:#?}", p);
   Ok(())
 }
