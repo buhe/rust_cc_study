@@ -1,4 +1,0 @@
-Program -> Functions
-Functions -> Type Identifier LParen RParen LBrace Statements RBrace
-Statements -> ReturnStmt   
-ReturnStmt -> Return IntConst(2021) Comma
