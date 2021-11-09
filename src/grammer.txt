@@ -1,4 +1,24 @@
-Program -> Functions
-Functions -> Type Identifier LParen RParen LBrace Statements RBrace
-Statements -> ReturnStmt   
-ReturnStmt -> Return IntConst(2021) Comma
+program
+    : function
+
+function
+    : type Identifier '(' ')' '{' statement '}'
+
+type
+    : 'int'
+
+statement
+    : 'return' expression ';'
+
+expression
+    : Integer
+
+
+step2
+
+expression
+    : unary
+
+unary
+    : Integer
+    | ('-'|'!'|'~') unary
