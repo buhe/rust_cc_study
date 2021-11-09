@@ -1,4 +1,3 @@
-#![feature(try_blocks)]
 
 fn main() -> std::io::Result<()> {
     // println!("Hello, world!");
