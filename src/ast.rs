@@ -14,5 +14,12 @@ pub enum Stmt {
 }
 #[derive(Debug, Clone)]
 pub enum Expr {
+  Unary(Unary),
+}
+
+#[derive(Debug, Clone)]
+pub enum Unary {
   Int(i32),
+  Neg(Box<Unary>),
+  // Unary(Unary),
 }

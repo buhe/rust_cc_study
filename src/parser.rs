@@ -38,17 +38,35 @@ impl Parser {
     self.pos += 1;
   }
 
-  fn num(&mut self) -> Expr {
-    let t = &self.tokens[self.pos];
-    self.pos += 1;
+  fn num(&mut self,t: &Token) -> Expr {
     match t.ty {
-      TokenType::Num(val) => Expr::Int(val),
-      _ => self.bad_token("number expected"),
+      TokenType::Num(val) => Expr::Unary(Unary::Int(val)),
+      _ => self.bad_token("number expected from num"),
     }
   }
 
   fn expr(&mut self) -> Expr {
-    self.num()
+    let t = &self.tokens[self.pos];
+    self.pos += 1;
+    match t.ty {
+      TokenType::Neg => self.unary(),
+      TokenType::Num(val) => Expr::Unary(Unary::Int(val)),
+      _ => self.bad_token("number expected from expr"),
+    }
+  }
+
+  fn unary(&mut self) -> Expr {
+    Expr::Unary(Unary::Neg(Box::new(self._unary())))
+  }
+
+  fn _unary(&mut self) -> Unary {
+    let t = &self.tokens[self.pos];
+    self.pos += 1;
+    match t.ty {
+      TokenType::Neg => Unary::Neg(Box::new(self._unary())),
+      TokenType::Num(val) => Unary::Int(val),
+      _ => self.bad_token("number expected from _unary"),
+    }
   }
 
   fn stmt(&mut self) -> Stmt {
