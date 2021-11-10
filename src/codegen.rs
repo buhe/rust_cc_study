@@ -11,7 +11,7 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
       IrStmt::Neg => {
         let t1 = r.last;
         let t2 = r.eat();
-        writeln!(w, "  {} = neg {}", t2,t1)?;
+        writeln!(w, "  neg {} , {}", t2,t1)?;
         writeln!(w, "  sw {}, 0(sp)", t2)?;
       }
       IrStmt::Ldc(x) => {

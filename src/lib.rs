@@ -11,11 +11,11 @@ use std::io::{Result, Write};
 
 pub fn run(path: String, output: &mut impl Write) -> Result<()> {
   let t = tokenize(path);
-  println!("Tokens: {:#?}", t);
+  // println!("Tokens: {:#?}", t);
    let p = parsing(&t);
-     println!("Prog: {:#?}", &p);
+    //  println!("Prog: {:#?}", &p);
      let p = ir::ast2ir(&p);
-     println!("IR Prog: {:#?}", &p);
+    //  println!("IR Prog: {:#?}", &p);
      codegen::write_asm(&p, output)
   // Ok(())
 }
