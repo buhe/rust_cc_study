@@ -22,3 +22,8 @@ expression
 unary
     : Integer
     | ('-'|'!'|'~') unary
+
+ir
+
+_T0 = 1
+_T1 = NEG _T0

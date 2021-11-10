@@ -21,5 +21,4 @@ pub enum Expr {
 pub enum Unary {
   Int(i32),
   Neg(Box<Unary>),
-  // Unary(Unary),
 }

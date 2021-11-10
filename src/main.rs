@@ -5,3 +5,13 @@ fn main() -> std::io::Result<()> {
     return --2021;
 }".to_string(), &mut std::io::stdout())
 }
+
+mod tests {
+    fn integer() {
+
+    }
+
+    fn neg_integer() {
+        
+    }
+}

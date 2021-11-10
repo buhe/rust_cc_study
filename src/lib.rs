@@ -1,8 +1,9 @@
 pub mod lexer;
 pub mod parser;
 pub mod ast;
-// pub mod ir;
-// pub mod codegen;
+pub mod ir;
+pub mod codegen;
+pub mod regeister;
 
 use lexer::tokenize;
 use parser::parsing;
@@ -13,8 +14,8 @@ pub fn run(path: String, output: &mut impl Write) -> Result<()> {
   println!("Tokens: {:#?}", t);
    let p = parsing(&t);
      println!("Prog: {:#?}", &p);
-  //    let p = ir::ast2ir(&p);
-  //   //  println!("IR Prog: {:#?}", &p);
-  //    codegen::write_asm(&p, output)
-  Ok(())
+     let p = ir::ast2ir(&p);
+     println!("IR Prog: {:#?}", &p);
+     codegen::write_asm(&p, output)
+  // Ok(())
 }

@@ -13,6 +13,7 @@ pub struct IrFunc {
 
 #[derive(Debug, Clone)]
 pub enum IrStmt {
+  Neg,
   Ldc(i32),
   Ret,
 }
@@ -39,6 +40,16 @@ fn func(f: &Func) -> IrFunc {
 
 fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
   match e {
-    Expr::Int(x) => stmts.push(IrStmt::Ldc(*x)),
+    Expr::Unary(x)=> unary(stmts, x),
   }
+}
+
+fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
+  match u {
+        Unary::Int(y) => stmts.push(IrStmt::Ldc(*y)),
+        Unary::Neg(y) => { 
+          stmts.push(IrStmt::Neg);
+          unary(stmts, &*y)
+        },
+    }
 }
