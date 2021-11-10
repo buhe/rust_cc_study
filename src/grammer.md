@@ -1,3 +1,5 @@
+### step1
+```
 program
     : function
 
@@ -12,16 +14,17 @@ statement
 
 expression
     : Integer
-
+```
 
 ### step2
-
+```
 expression
     : unary
 
 unary
     : Integer
     | ('-'|'!'|'~') unary
+```
 - 一元运算符是右结合
 #### ir
 
