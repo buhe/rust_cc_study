@@ -1,18 +1,22 @@
 pub struct Regeister {
-    stack: Vec<&'static str>
+    stack: Vec<&'static str>,
+    pub last: &'static str,
 }
 
 impl Regeister {
     pub fn init() -> Self {
         Self {
-            stack: vec!["t0","t1","t2"]
+            stack: vec!["t2","t1","t0"],
+            last: "t0"
         }
     }
-    pub fn select<'a,'b>(&'a mut self) -> &'b str {
-        self.stack.pop().unwrap()
+    pub fn eat<'a,'b>(&'a mut self) -> &'b str {
+        let a = self.stack.pop().unwrap();
+        self.last = a;
+        a
     }
 
-    pub fn select2<'a,'b>(&'a mut self) -> &'b str {
+    pub fn take<'a,'b>(&'a mut self) -> &'b str {
         self.stack[self.stack.len() - 1]
     }
 }

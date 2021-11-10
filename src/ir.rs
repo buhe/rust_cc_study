@@ -46,9 +46,9 @@ fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
 
 fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
   match u {
-        Unary::Int(y) => stmts.push(IrStmt::Ldc(*y)),
+        Unary::Int(y) => stmts.insert(0,IrStmt::Ldc(*y)),
         Unary::Neg(y) => { 
-          stmts.push(IrStmt::Neg);
+          stmts.insert(0,IrStmt::Neg);
           unary(stmts, &*y)
         },
     }

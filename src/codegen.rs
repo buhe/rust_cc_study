@@ -9,14 +9,15 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
   for s in &f.stmts {
     match s {
       IrStmt::Neg => {
-        let t1 = r.select();
-        let t2 = r.select2();
-        writeln!(w, "  {} = neg {}", t1,t2)?;
-        writeln!(w, "  sw t0, 0(sp)")?;
+        let t1 = r.last;
+        let t2 = r.eat();
+        writeln!(w, "  {} = neg {}", t2,t1)?;
+        writeln!(w, "  sw {}, 0(sp)", t2)?;
       }
       IrStmt::Ldc(x) => {
-        writeln!(w, "  li t0, {}", x)?;
-        writeln!(w, "  sw t0, -8(sp)")?;
+        let t = r.eat();
+        writeln!(w, "  li {}, {}", t, x)?;
+        writeln!(w, "  sw {}, -8(sp)", t)?;
         writeln!(w, "  add sp, sp, -8")?;
       }
       IrStmt::Ret => {
