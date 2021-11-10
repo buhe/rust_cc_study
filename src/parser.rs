@@ -48,22 +48,27 @@ impl Parser {
   fn expr(&mut self) -> Expr {
     let t = &self.tokens[self.pos];
     self.pos += 1;
+    let mut child:Vec<Unary> = vec![];
     match t.ty {
-      TokenType::Neg => self.unary(),
+      TokenType::Neg => self.unary(&mut child),
       TokenType::Num(val) => Expr::Unary(Unary::Int(val)),
       _ => self.bad_token("number expected from expr"),
     }
   }
 
-  fn unary(&mut self) -> Expr {
-    Expr::Unary(Unary::Neg(Box::new(self._unary())))
+  fn unary(&mut self, c: &mut Vec<Unary>) -> Expr {
+    Expr::Unary(Unary::Neg(Box::new(self._unary(c))))
   }
 
-  fn _unary(&mut self) -> Unary {
+  fn _unary(&mut self, c: &mut Vec<Unary>) -> Unary {
     let t = &self.tokens[self.pos];
     self.pos += 1;
     match t.ty {
-      TokenType::Neg => Unary::Neg(Box::new(self._unary())),
+      TokenType::Neg => {
+        let a = Unary::Neg(Box::new(self._unary(c)));
+        c.insert(0, a.clone());
+        a
+      },
       TokenType::Num(val) => Unary::Int(val),
       _ => self.bad_token("number expected from _unary"),
     }
