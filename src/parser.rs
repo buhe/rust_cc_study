@@ -38,12 +38,12 @@ impl Parser {
     self.pos += 1;
   }
 
-  fn num(&mut self,t: &Token) -> Expr {
-    match t.ty {
-      TokenType::Num(val) => Expr::Unary(Unary::Int(val)),
-      _ => self.bad_token("number expected from num"),
-    }
-  }
+  // fn num(&mut self,t: &Token) -> Expr {
+  //   match t.ty {
+  //     TokenType::Num(val) => Expr::Unary(Unary::Int(val)),
+  //     _ => self.bad_token("number expected from num"),
+  //   }
+  // }
 
   fn expr(&mut self) -> Expr {
     let t = &self.tokens[self.pos];
