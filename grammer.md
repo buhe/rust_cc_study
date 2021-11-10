@@ -30,3 +30,25 @@ unary
 
 _T0 = 1
 _T1 = NEG _T0
+
+### step3
+```
+expression
+    : additive
+
+additive
+    : multiplicative
+    | additive ('+'|'-') multiplicative
+
+multiplicative
+    : unary
+    | multiplicative ('*'|'/'|'%') unary
+
+unary
+    : primary
+    | ('-'|'~'|'!') unary
+
+primary
+    : Integer
+    | '(' expression ')'
+```
