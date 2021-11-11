@@ -18,6 +18,10 @@ pub enum TokenType {
     Equal,         // =
     Return,        // "return"
     Neg,           // -
+    Add,           // +
+    Mul,           // *
+    Div,
+    Mod,
 }
 
 // Character Kind
@@ -42,6 +46,10 @@ impl TokenType {
             '{' => Some(LeftBrace),
             '}' => Some(RightBrace),
             '-' => Some(Neg),
+            '+' => Some(Add),
+            '*' => Some(Mul),
+            '/' => Some(Div),
+            '%' => Some(Mod),
             _ => None,
         }
     }

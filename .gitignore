@@ -2,3 +2,6 @@
 target
 asm.S
 out
+.vscode/configurationCache.log
+.vscode/dryrun.log
+.vscode/targets.log
