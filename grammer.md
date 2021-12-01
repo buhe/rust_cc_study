@@ -1,3 +1,5 @@
+### Constraint
+1. 只在终结符号移动下标，非终结不移动。
 ### step1
 ```
 program
@@ -44,6 +46,34 @@ multiplicative
     : unary
     | multiplicative ('*'|'/'|'%') unary
 
+unary
+    : primary
+    | ('-'|'~'|'!') unary
+
+primary
+    : Integer
+    | '(' expression ')'
+```
+
+#### step3 消除左递归后
+A = Aa | Ab | r
+消除后
+A = rT
+T = aT | bT | <
+```
+expression
+    : additive
+
+additive
+    : multiplicative rest
+rest
+    : ('+'|'-') multiplicative rest
+    | <
+multiplicative
+    : unary rest2
+rest2
+    : ('*'|'/'|'%') unary rest2
+    | <
 unary
     : primary
     | ('-'|'~'|'!') unary
