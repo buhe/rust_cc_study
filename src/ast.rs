@@ -37,10 +37,5 @@ pub enum Expr {
 pub enum Unary {
   Int(i32),
   Neg(Box<Unary>),
+  Primary(Box<Expr>)
 }
-
-// #[derive(Debug, Clone)]
-// pub enum Primary {
-//   Int(i32),
-//   Paren(Box<Expr>)
-// }

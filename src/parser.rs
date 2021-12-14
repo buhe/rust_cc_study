@@ -48,6 +48,11 @@ impl Parser {
     match t.ty {
       TokenType::Neg => Unary::Neg(Box::new(self.unary())),
       TokenType::Num(val) => Unary::Int(val),
+      TokenType::LeftParen => {
+        let r = Unary::Primary(Box::new(self.expr()));
+        self.pos += 1; //skip right paren
+        r
+      },
       _ => self.bad_token("number expected from _unary"),
     }
   }

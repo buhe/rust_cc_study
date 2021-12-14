@@ -51,5 +51,9 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
           stmts.insert(0,IrStmt::Neg);
           unary(stmts, &*y)
         },
+        Unary::Primary(y) => {
+          expr(stmts, &*y)
+          // stmts.append(other)
+        }
     }
 }
