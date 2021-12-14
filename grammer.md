@@ -33,6 +33,16 @@ unary
 _T0 = 1
 _T1 = NEG _T0
 
+### step2.5
+```
+unary
+    : primary
+    | ('-'|'~'|'!') unary
+
+primary
+    : Integer
+    | '(' expression ')'
+```
 ### step3
 ```
 expression
