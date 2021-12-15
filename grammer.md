@@ -92,3 +92,12 @@ primary
     : Integer
     | '(' expression ')'
 ```
+
+#### ir
+_T0 = 1
+_T1 = 3
+_T2 = ADD _T0, _T1
+_T3 = SUB _T0, _T1
+_T4 = MUL _T0, _T1
+_T5 = DIV _T0, _T1
+_T6 = MOD _T0, _T1

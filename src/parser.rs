@@ -39,7 +39,52 @@ impl Parser {
   }
 
   fn expr(&mut self) -> Expr {
-    Expr::Unary(self.unary())
+    Expr::Additive(self.additive())
+  }
+
+  fn additive(&mut self) -> Additive {
+    // let t = &self.tokens[self.pos];
+    // self.pos += 1;
+    let a = Additive::Multiplicative(self.multiplicative());
+    self.rest();
+    a
+  }
+
+  fn rest(&mut self) {
+    let t = &self.tokens[self.pos];
+    self.pos += 1;
+    match t.ty {
+      TokenType::Add | TokenType::Neg => {
+        self.multiplicative();
+        self.rest();
+
+      }
+      _ => {
+        self.pos -= 1;
+      },
+    }
+  }
+
+  fn multiplicative(&mut self) -> Multiplicative {
+    // let t = &self.tokens[self.pos];
+    // self.pos += 1;
+    let u = Multiplicative::Unary(self.unary());
+    self.rest2();
+    u
+  }
+
+  fn rest2(&mut self) {
+    let t = &self.tokens[self.pos];
+    self.pos += 1;
+    match t.ty {
+      TokenType::Mod | TokenType::Mul | TokenType::Div => {
+        self.multiplicative();
+        self.rest2();
+      }
+      _ => {
+        self.pos -= 1;
+      },
+    }
   }
 
   fn unary(&mut self) -> Unary {

@@ -40,8 +40,16 @@ fn func(f: &Func) -> IrFunc {
 
 fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
   match e {
-    Expr::Unary(x)=> unary(stmts, x),
+    Expr::Additive(x)=> additive(stmts, x),
   }
+}
+
+fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
+
+}
+
+fn multiplicative(stmts: &mut Vec<IrStmt>,m: &Multiplicative) {
+
 }
 
 fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
