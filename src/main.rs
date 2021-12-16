@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn _4_expr3() {
-        lang_study::run("int main() { return 1 - 2 - 3; }".to_string(), 
+        lang_study::run("int main() { return 1 - 2 - 3 - 4; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 }

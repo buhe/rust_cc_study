@@ -46,30 +46,35 @@ impl Parser {
     // let t = &self.tokens[self.pos];
     // self.pos += 1;
     // let a = Additive::Multiplicative(self.multiplicative());
-    let m = self.multiplicative();
-    self.rest(m)
+    let m = self.multiplicative();//1
+    self.rest(Additive::Multiplicative(m))//-2-3
     // a
   }
 
-  fn rest(&mut self, m: Multiplicative) -> Additive{
+  fn rest(&mut self, a: Additive) -> Additive{
     let t = &self.tokens[self.pos];
     // self.pos += 1;
     match t.ty {
       TokenType::Add => {
         self.pos += 1;
-        let m1 = self.multiplicative();
+        let m1 = self.multiplicative(); // 2
+                                                     // 3
         // self.rest();
-        Additive::Add(m, Box::new(self.rest(m1)))
+        let a1 = Additive::Add(m1, Box::new(a));
+        self.rest(a1)
       }
       TokenType::Neg => {
         self.pos += 1;
-        let m1 = self.multiplicative();
+        let m1 = self.multiplicative(); // 2
+                                                     // 3
         // self.rest();
-        Additive::Sub(m, Box::new(self.rest(m1)))
+        let a1 = Additive::Sub(m1, Box::new(a));
+        self.rest(a1)
       }
       _ => {
         // self.pos -= 1;
-        Additive::Multiplicative(m)
+        // Additive::Multiplicative(m)
+        a
       },
     }
   }
@@ -79,22 +84,34 @@ impl Parser {
     // self.pos += 1;
     // let u = Multiplicative::Unary(self.unary());
     let u = self.unary();
-    self.rest2(u)
+    self.rest2(Multiplicative::Unary(u))
     // u
   }
 
-  fn rest2(&mut self, u: Unary) -> Multiplicative{
+  fn rest2(&mut self, m: Multiplicative) -> Multiplicative{
     let t = &self.tokens[self.pos];
     // self.pos += 1;
     match t.ty {
-      TokenType::Mod | TokenType::Mul | TokenType::Div => {
+       TokenType::Div => {
         self.pos += 1;
         let u1 = self.unary();
-        Multiplicative::Div(u, Box::new(self.rest2(u1)))
+        let m1 = Multiplicative::Div(u1, Box::new(m));
+        self.rest2(m1)
+      }
+      TokenType::Mod => {
+        self.pos += 1;
+        let u1 = self.unary();
+        let m1 = Multiplicative::Mod(u1, Box::new(m));
+        self.rest2(m1)
+      }
+      TokenType::Mul => {
+        self.pos += 1;
+        let u1 = self.unary();
+        let m1 = Multiplicative::Mul(u1, Box::new(m));
+        self.rest2(m1)
       }
       _ => {
-        // self.pos -= 1;
-        Multiplicative::Unary(u)
+        m
       },
     }
   }
