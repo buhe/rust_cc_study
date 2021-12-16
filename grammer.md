@@ -101,3 +101,25 @@ _T3 = SUB _T0, _T1
 _T4 = MUL _T0, _T1
 _T5 = DIV _T0, _T1
 _T6 = MOD _T0, _T1
+
+### step4
+```
+equality
+     : relational
+     | equality ('=='|'!=') relational
+
+ relational
+     : additive
+     | relational ('<'|'>'|'<='|'>=') additive
+
+ expression
+     : logical_or
+
+ logical_or
+     : logical_and
+     | logical_or '||' logical_and
+
+ logical_and
+     : equality
+     | logical_and '&&' equality
+```
