@@ -66,10 +66,12 @@ primary
 ```
 
 #### step3 消除左递归后
+```
 A = Aa | Ab | r
 消除后
 A = rT
 T = aT | bT | <
+```
 ```
 expression
     : additive
