@@ -43,23 +43,17 @@ impl Parser {
   }
 
   fn additive(&mut self) -> Additive {
-    // let t = &self.tokens[self.pos];
-    // self.pos += 1;
-    // let a = Additive::Multiplicative(self.multiplicative());
     let m = self.multiplicative();//1
     self.rest(Additive::Multiplicative(m))//-2-3
-    // a
   }
 
   fn rest(&mut self, a: Additive) -> Additive{
     let t = &self.tokens[self.pos];
-    // self.pos += 1;
     match t.ty {
       TokenType::Add => {
         self.pos += 1;
         let m1 = self.multiplicative(); // 2
                                                      // 3
-        // self.rest();
         let a1 = Additive::Add(m1, Box::new(a));
         self.rest(a1)
       }
@@ -67,30 +61,22 @@ impl Parser {
         self.pos += 1;
         let m1 = self.multiplicative(); // 2
                                                      // 3
-        // self.rest();
         let a1 = Additive::Sub(m1, Box::new(a));
         self.rest(a1)
       }
       _ => {
-        // self.pos -= 1;
-        // Additive::Multiplicative(m)
         a
       },
     }
   }
 
   fn multiplicative(&mut self) -> Multiplicative {
-    // let t = &self.tokens[self.pos];
-    // self.pos += 1;
-    // let u = Multiplicative::Unary(self.unary());
     let u = self.unary();
     self.rest2(Multiplicative::Unary(u))
-    // u
   }
 
   fn rest2(&mut self, m: Multiplicative) -> Multiplicative{
     let t = &self.tokens[self.pos];
-    // self.pos += 1;
     match t.ty {
        TokenType::Div => {
         self.pos += 1;
@@ -159,7 +145,6 @@ impl Parser {
     }
   }
 
-  //fn prog(&mut self) -> Option<Prog> {
 
   fn prog(&mut self) {
     // Function
