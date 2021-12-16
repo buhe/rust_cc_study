@@ -52,33 +52,34 @@ fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
 fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
   match a {
     Additive::Add(m,a1) | Additive::Sub(m,a1)=> {
-      stmts.push(IrStmt::Add);
-      additive(stmts, a1);
       multiplicative(stmts, m);
+      
+      additive(stmts, a1);
+      stmts.push(IrStmt::Add);
     },
     Additive::Multiplicative(m) => multiplicative(stmts, m),
-    Additive::Null => {}
   }
 }
 
 fn multiplicative(stmts: &mut Vec<IrStmt>,m: &Multiplicative) {
   match m {
     Multiplicative::Div(u,m1) | Multiplicative::Mod(u, m1) | Multiplicative::Mul(u, m1) => {
-      stmts.push(IrStmt::Mul);
-      multiplicative(stmts, m1);
       unary(stmts, u);
+      
+      multiplicative(stmts, m1);
+      stmts.push(IrStmt::Mul);
     },
     Multiplicative::Unary(u) => unary(stmts, u),
-    Multiplicative::Null => {}
   }
 }
 
 fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
   match u {
-        Unary::Int(y) => stmts.insert(0,IrStmt::Ldc(*y)),
+        Unary::Int(y) => stmts.push(IrStmt::Ldc(*y)),
         Unary::Neg(y) => { 
-          stmts.insert(0,IrStmt::Neg);
-          unary(stmts, &*y)
+          
+          unary(stmts, &*y);
+          stmts.push(IrStmt::Neg);
         },
         Unary::Primary(y) => {
           expr(stmts, &*y)

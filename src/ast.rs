@@ -23,7 +23,6 @@ pub enum Additive {
   Multiplicative(Multiplicative),
   Add(Multiplicative, Box<Additive>),
   Sub(Multiplicative, Box<Additive>),
-  Null
 }
 
 #[derive(Debug, Clone)]
@@ -32,7 +31,6 @@ pub enum Multiplicative {
   Mul(Unary, Box<Multiplicative>),
   Div(Unary, Box<Multiplicative>),
   Mod(Unary, Box<Multiplicative>),
-  Null
 }
 
 #[derive(Debug, Clone)]
