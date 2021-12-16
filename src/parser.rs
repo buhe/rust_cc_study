@@ -45,22 +45,25 @@ impl Parser {
   fn additive(&mut self) -> Additive {
     // let t = &self.tokens[self.pos];
     // self.pos += 1;
-    let a = Additive::Multiplicative(self.multiplicative());
-    self.rest();
-    a
+    // let a = Additive::Multiplicative(self.multiplicative());
+    let m = self.multiplicative();
+    self.rest(m)
+    // a
   }
 
-  fn rest(&mut self) {
+  fn rest(&mut self, m: Multiplicative) -> Additive{
     let t = &self.tokens[self.pos];
-    self.pos += 1;
+    // self.pos += 1;
     match t.ty {
       TokenType::Add | TokenType::Neg => {
-        self.multiplicative();
-        self.rest();
-
+        self.pos += 1;
+        let m1 = self.multiplicative();
+        // self.rest();
+        Additive::Add(m, Box::new(self.rest(m1)))
       }
       _ => {
-        self.pos -= 1;
+        // self.pos -= 1;
+        Additive::Multiplicative(m)
       },
     }
   }
@@ -68,21 +71,24 @@ impl Parser {
   fn multiplicative(&mut self) -> Multiplicative {
     // let t = &self.tokens[self.pos];
     // self.pos += 1;
-    let u = Multiplicative::Unary(self.unary());
-    self.rest2();
-    u
+    // let u = Multiplicative::Unary(self.unary());
+    let u = self.unary();
+    self.rest2(u)
+    // u
   }
 
-  fn rest2(&mut self) {
+  fn rest2(&mut self, u: Unary) -> Multiplicative{
     let t = &self.tokens[self.pos];
-    self.pos += 1;
+    // self.pos += 1;
     match t.ty {
       TokenType::Mod | TokenType::Mul | TokenType::Div => {
-        self.multiplicative();
-        self.rest2();
+        self.pos += 1;
+        let u1 = self.unary();
+        Multiplicative::Div(u, Box::new(self.rest2(u1)))
       }
       _ => {
-        self.pos -= 1;
+        // self.pos -= 1;
+        Multiplicative::Unary(u)
       },
     }
   }

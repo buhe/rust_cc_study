@@ -12,18 +12,38 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
         let t1 = r.last;
         let t2 = r.eat();
         writeln!(w, "  neg {} , {}", t2,t1)?;
-        writeln!(w, "  sw {}, 0(sp)", t2)?;
+        // writeln!(w, "  sw {}, 0(sp)", t2)?;
       }
       IrStmt::Ldc(x) => {
         let t = r.eat();
         writeln!(w, "  li {}, {}", t, x)?;
-        writeln!(w, "  sw {}, -8(sp)", t)?;
-        writeln!(w, "  add sp, sp, -8")?;
+        // writeln!(w, "  sw {}, -8(sp)", t)?;
+        // writeln!(w, "  add sp, sp, -8")?;
       }
       IrStmt::Ret => {
         writeln!(w, "  lw a0, 0(sp)")?;
-        writeln!(w, "  add sp, sp, 8")?;
+        // writeln!(w, "  add sp, sp, 8")?; 
         writeln!(w, "  ret")?;
+      }
+      IrStmt::Add => {
+        let t = r.eat();
+        writeln!(w, "  add, {} ,x ,x", t)?;
+      }
+      IrStmt::Sub => {
+        let t = r.eat();
+        writeln!(w, "  sub, {} ,x ,x", t)?;
+      }
+      IrStmt::Div => {
+        let t = r.eat();
+        writeln!(w, "  div, {} ,x ,x", t)?;
+      }
+      IrStmt::Mod => {
+        let t = r.eat();
+        writeln!(w, "  mod, {} ,x ,x", t)?;
+      }
+      IrStmt::Mul => {
+        let t = r.eat();
+        writeln!(w, "  mul, {} ,x ,x", t)?;
       }
     }
   }

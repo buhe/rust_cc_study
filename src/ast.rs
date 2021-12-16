@@ -21,16 +21,18 @@ pub enum Expr {
 #[derive(Debug, Clone)]
 pub enum Additive {
   Multiplicative(Multiplicative),
-  Add(Box<Additive>, Multiplicative),
-  Sub(Box<Additive>, Multiplicative),
+  Add(Multiplicative, Box<Additive>),
+  Sub(Multiplicative, Box<Additive>),
+  Null
 }
 
 #[derive(Debug, Clone)]
 pub enum Multiplicative {
   Unary(Unary),
-  Mul(Box<Multiplicative>, Unary),
-  Div(Box<Multiplicative>, Unary),
-  Mod(Box<Multiplicative>, Unary),
+  Mul(Unary, Box<Multiplicative>),
+  Div(Unary, Box<Multiplicative>),
+  Mod(Unary, Box<Multiplicative>),
+  Null
 }
 
 #[derive(Debug, Clone)]

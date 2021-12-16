@@ -13,6 +13,11 @@ pub struct IrFunc {
 
 #[derive(Debug, Clone)]
 pub enum IrStmt {
+  Add,
+  Sub,
+  Mul,
+  Div,
+  Mod,
   Neg,
   Ldc(i32),
   Ret,
@@ -45,11 +50,27 @@ fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
 }
 
 fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
-
+  match a {
+    Additive::Add(m,a1) | Additive::Sub(m,a1)=> {
+      stmts.push(IrStmt::Add);
+      additive(stmts, a1);
+      multiplicative(stmts, m);
+    },
+    Additive::Multiplicative(m) => multiplicative(stmts, m),
+    Additive::Null => {}
+  }
 }
 
 fn multiplicative(stmts: &mut Vec<IrStmt>,m: &Multiplicative) {
-
+  match m {
+    Multiplicative::Div(u,m1) | Multiplicative::Mod(u, m1) | Multiplicative::Mul(u, m1) => {
+      stmts.push(IrStmt::Mul);
+      multiplicative(stmts, m1);
+      unary(stmts, u);
+    },
+    Multiplicative::Unary(u) => unary(stmts, u),
+    Multiplicative::Null => {}
+  }
 }
 
 fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
