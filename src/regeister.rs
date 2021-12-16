@@ -6,7 +6,7 @@ pub struct Regeister {
 impl Regeister {
     pub fn init() -> Self {
         Self {
-            stack: vec!["t4","t3","t2","t1","t0"],
+            stack: vec!["t6","t5","t4","t3","t2","t1","t0"],
             near_stack: vec![]
         }
     }
