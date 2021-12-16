@@ -51,11 +51,17 @@ fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
 
 fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
   match a {
-    Additive::Add(m,a1) | Additive::Sub(m,a1)=> {
+    Additive::Add(m,a1) => {
       multiplicative(stmts, m);
       
       additive(stmts, a1);
       stmts.push(IrStmt::Add);
+    },
+    Additive::Sub(m,a1)=> {
+      multiplicative(stmts, m);
+      
+      additive(stmts, a1);
+      stmts.push(IrStmt::Sub);
     },
     Additive::Multiplicative(m) => multiplicative(stmts, m),
   }

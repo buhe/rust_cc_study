@@ -30,9 +30,15 @@ mod tests {
         &mut std::io::stdout()).unwrap();
     }
 
-        #[test]
+    #[test]
     fn _4_expr2() {
         lang_study::run("int main() { return 1 + 1 * 2; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+    #[test]
+    fn _4_expr3() {
+        lang_study::run("int main() { return 1 - 2 - 3; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 }

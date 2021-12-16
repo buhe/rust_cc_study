@@ -55,11 +55,17 @@ impl Parser {
     let t = &self.tokens[self.pos];
     // self.pos += 1;
     match t.ty {
-      TokenType::Add | TokenType::Neg => {
+      TokenType::Add => {
         self.pos += 1;
         let m1 = self.multiplicative();
         // self.rest();
         Additive::Add(m, Box::new(self.rest(m1)))
+      }
+      TokenType::Neg => {
+        self.pos += 1;
+        let m1 = self.multiplicative();
+        // self.rest();
+        Additive::Sub(m, Box::new(self.rest(m1)))
       }
       _ => {
         // self.pos -= 1;
