@@ -10,3 +10,8 @@
 - https://decaf-lang.github.io/
 
 - [grammar](./grammer.md)
+
+### TODO
+
+- [ ] How to select phy reg
+- [ ] return expr
