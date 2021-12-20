@@ -44,38 +44,68 @@ fn func(f: &Func) -> IrFunc {
 }
 
 fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
-  match e {
-    Expr::Additive(x)=> additive(stmts, x),
-  }
+  // match e {
+  //   Expr::Additive(x)=> additive(stmts, x),
+  // }
+  bin_op(stmts, e)
 }
 
-fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
-  match a {
-    Additive::Add(m,a1) => {
-      multiplicative(stmts, m);
+// fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
+//   match a {
+//     Additive::Add(m,a1) => {
+//       multiplicative(stmts, m);
       
-      additive(stmts, a1);
-      stmts.push(IrStmt::Add);
-    },
-    Additive::Sub(m,a1)=> {
-      multiplicative(stmts, m);
+//       additive(stmts, a1);
+//       stmts.push(IrStmt::Add);
+//     },
+//     Additive::Sub(m,a1)=> {
+//       multiplicative(stmts, m);
       
-      additive(stmts, a1);
-      stmts.push(IrStmt::Sub);
-    },
-    Additive::Multiplicative(m) => multiplicative(stmts, m),
-  }
-}
+//       additive(stmts, a1);
+//       stmts.push(IrStmt::Sub);
+//     },
+//     Additive::Multiplicative(m) => multiplicative(stmts, m),
+//   }
+// }
 
-fn multiplicative(stmts: &mut Vec<IrStmt>,m: &Multiplicative) {
+fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr) {
   match m {
-    Multiplicative::Div(u,m1) | Multiplicative::Mod(u, m1) | Multiplicative::Mul(u, m1) => {
-      unary(stmts, u);
+    Expr::Mul(u, m1) => {
+      // unary(stmts, u);
       
-      multiplicative(stmts, m1);
+      bin_op(stmts, u);
+      bin_op(stmts, m1);
       stmts.push(IrStmt::Mul);
     },
-    Multiplicative::Unary(u) => unary(stmts, u),
+    Expr::Div(u, m1) => {
+      // unary(stmts, u);
+      
+      bin_op(stmts, u);
+      bin_op(stmts, m1);
+      stmts.push(IrStmt::Div);
+    },
+    Expr::Mod(u, m1) => {
+      // unary(stmts, u);
+      
+      bin_op(stmts, u);
+      bin_op(stmts, m1);
+      stmts.push(IrStmt::Mod);
+    },
+    Expr::Add(m,a1) => {
+      bin_op(stmts, m);
+      bin_op(stmts, a1);
+      
+      // additive(stmts, a1);
+      stmts.push(IrStmt::Add);
+    },
+    Expr::Sub(m,a1)=> {
+      bin_op(stmts, m);
+      bin_op(stmts, a1);
+      
+      // additive(stmts, a1);
+      stmts.push(IrStmt::Sub);
+    },
+    Expr::Unary(u) => unary(stmts, u),
   }
 }
 

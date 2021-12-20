@@ -14,24 +14,29 @@ pub enum Stmt {
 }
 #[derive(Debug, Clone)]
 pub enum Expr {
-  // Unary(Unary),
-  Additive(Additive)
-}
-
-#[derive(Debug, Clone)]
-pub enum Additive {
-  Multiplicative(Multiplicative),
-  Add(Multiplicative, Box<Additive>),
-  Sub(Multiplicative, Box<Additive>),
-}
-
-#[derive(Debug, Clone)]
-pub enum Multiplicative {
   Unary(Unary),
-  Mul(Unary, Box<Multiplicative>),
-  Div(Unary, Box<Multiplicative>),
-  Mod(Unary, Box<Multiplicative>),
+  Add(Box<Expr>, Box<Expr>),// left right
+  Sub(Box<Expr>, Box<Expr>),
+  Mul(Box<Expr>, Box<Expr>),
+  Div(Box<Expr>, Box<Expr>),
+  Mod(Box<Expr>, Box<Expr>),
+  // Additive(Additive)
 }
+
+// #[derive(Debug, Clone)]
+// pub enum Additive {
+//   Multiplicative(Multiplicative),
+//   Add(Multiplicative, Box<Additive>),
+//   Sub(Multiplicative, Box<Additive>),
+// }
+
+// #[derive(Debug, Clone)]
+// pub enum Multiplicative {
+//   Unary(Unary),
+//   Mul(Unary, Box<Multiplicative>),
+//   Div(Unary, Box<Multiplicative>),
+//   Mod(Unary, Box<Multiplicative>),
+// }
 
 #[derive(Debug, Clone)]
 pub enum Unary {

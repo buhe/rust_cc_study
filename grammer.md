@@ -94,7 +94,14 @@ primary
     : Integer
     | '(' expression ')'
 ```
+#### ast
+```
+expression
+    : unary
+    | expression + expression
+    | expression * expression
 
+```
 #### ir
 ```
 _T0 = 1

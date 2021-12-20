@@ -39,29 +39,29 @@ impl Parser {
   }
 
   fn expr(&mut self) -> Expr {
-    Expr::Additive(self.additive())
+    self.additive()
   }
 
-  fn additive(&mut self) -> Additive {
+  fn additive(&mut self) -> Expr {
     let m = self.multiplicative();//1
-    self.rest(Additive::Multiplicative(m))//-2-3
+    self.rest(m)//-2-3
   }
 
-  fn rest(&mut self, a: Additive) -> Additive{
+  fn rest(&mut self, a: Expr) -> Expr{
     let t = &self.tokens[self.pos];
     match t.ty {
       TokenType::Add => {
         self.pos += 1;
         let m1 = self.multiplicative(); // 2
                                                      // 3
-        let a1 = Additive::Add(m1, Box::new(a));
+        let a1 = Expr::Add(Box::new(a), Box::new(m1));
         self.rest(a1)
       }
       TokenType::Neg => {
         self.pos += 1;
         let m1 = self.multiplicative(); // 2
                                                      // 3
-        let a1 = Additive::Sub(m1, Box::new(a));
+        let a1 = Expr::Sub(Box::new(a), Box::new(m1));
         self.rest(a1)
       }
       _ => {
@@ -70,30 +70,30 @@ impl Parser {
     }
   }
 
-  fn multiplicative(&mut self) -> Multiplicative {
+  fn multiplicative(&mut self) -> Expr {
     let u = self.unary();
-    self.rest2(Multiplicative::Unary(u))
+    self.rest2(Expr::Unary(u))
   }
 
-  fn rest2(&mut self, m: Multiplicative) -> Multiplicative{
+  fn rest2(&mut self, m: Expr) -> Expr {
     let t = &self.tokens[self.pos];
     match t.ty {
        TokenType::Div => {
         self.pos += 1;
         let u1 = self.unary();
-        let m1 = Multiplicative::Div(u1, Box::new(m));
+        let m1 = Expr::Div(Box::new(m), Box::new(Expr::Unary(u1)));
         self.rest2(m1)
       }
       TokenType::Mod => {
         self.pos += 1;
         let u1 = self.unary();
-        let m1 = Multiplicative::Mod(u1, Box::new(m));
+        let m1 = Expr::Mod(Box::new(m), Box::new(Expr::Unary(u1)));
         self.rest2(m1)
       }
       TokenType::Mul => {
         self.pos += 1;
         let u1 = self.unary();
-        let m1 = Multiplicative::Mul(u1, Box::new(m));
+        let m1 = Expr::Mul(Box::new(m), Box::new(Expr::Unary(u1)));
         self.rest2(m1)
       }
       _ => {

@@ -29,32 +29,32 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
         let t1 = r.near();
         let t2 = r.near();
         let t = r.eat();
-        writeln!(w, "  add, {} ,{} ,{}", t, t1, t2)?;
+        writeln!(w, "  add, {} ,{} ,{}", t, t2, t1)?;
       }
       IrStmt::Sub => {
         let t1 = r.near();
         let t2 = r.near();
         let t = r.eat();
-        writeln!(w, "  sub, {} ,{} ,{}", t, t1, t2)?;
+        writeln!(w, "  sub, {} ,{} ,{}", t, t2, t1)?;
       }
       IrStmt::Div => {
         let t1 = r.near();
         let t2 = r.near();
         let t = r.eat();
-        writeln!(w, "  div, {} ,{} ,{}", t, t1, t2)?;
+        writeln!(w, "  div, {} ,{} ,{}", t, t2, t1)?;
       }
       IrStmt::Mod => {
         let t1 = r.near();
         let t2 = r.near();
         let t = r.eat();
-        writeln!(w, "  mod, {} ,{} ,{}", t, t1, t2)?;
+        writeln!(w, "  mod, {} ,{} ,{}", t, t2, t1)?;
       }
       IrStmt::Mul => {
         
         let t1 = r.near();
         let t2 = r.near();
         let t = r.eat();
-        writeln!(w, "  mul, {} ,{} ,{}", t, t1, t2)?;
+        writeln!(w, "  mul, {} ,{} ,{}", t, t2, t1)?;
       }
     }
   }
