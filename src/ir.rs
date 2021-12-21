@@ -44,49 +44,22 @@ fn func(f: &Func) -> IrFunc {
 }
 
 fn expr(stmts: &mut Vec<IrStmt>, e: &Expr) {
-  // match e {
-  //   Expr::Additive(x)=> additive(stmts, x),
-  // }
   bin_op(stmts, e)
 }
-
-// fn additive(stmts: &mut Vec<IrStmt>,a: &Additive) {
-//   match a {
-//     Additive::Add(m,a1) => {
-//       multiplicative(stmts, m);
-      
-//       additive(stmts, a1);
-//       stmts.push(IrStmt::Add);
-//     },
-//     Additive::Sub(m,a1)=> {
-//       multiplicative(stmts, m);
-      
-//       additive(stmts, a1);
-//       stmts.push(IrStmt::Sub);
-//     },
-//     Additive::Multiplicative(m) => multiplicative(stmts, m),
-//   }
-// }
 
 fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr) {
   match m {
     Expr::Mul(u, m1) => {
-      // unary(stmts, u);
-      
       bin_op(stmts, u);
       bin_op(stmts, m1);
       stmts.push(IrStmt::Mul);
     },
     Expr::Div(u, m1) => {
-      // unary(stmts, u);
-      
       bin_op(stmts, u);
       bin_op(stmts, m1);
       stmts.push(IrStmt::Div);
     },
     Expr::Mod(u, m1) => {
-      // unary(stmts, u);
-      
       bin_op(stmts, u);
       bin_op(stmts, m1);
       stmts.push(IrStmt::Mod);
@@ -94,15 +67,11 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr) {
     Expr::Add(m,a1) => {
       bin_op(stmts, m);
       bin_op(stmts, a1);
-      
-      // additive(stmts, a1);
       stmts.push(IrStmt::Add);
     },
     Expr::Sub(m,a1)=> {
       bin_op(stmts, m);
       bin_op(stmts, a1);
-      
-      // additive(stmts, a1);
       stmts.push(IrStmt::Sub);
     },
     Expr::Unary(u) => unary(stmts, u),
@@ -113,13 +82,11 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
   match u {
         Unary::Int(y) => stmts.push(IrStmt::Ldc(*y)),
         Unary::Neg(y) => { 
-          
           unary(stmts, &*y);
           stmts.push(IrStmt::Neg);
         },
         Unary::Primary(y) => {
           expr(stmts, &*y)
-          // stmts.append(other)
         }
     }
 }

@@ -20,24 +20,7 @@ pub enum Expr {
   Mul(Box<Expr>, Box<Expr>),
   Div(Box<Expr>, Box<Expr>),
   Mod(Box<Expr>, Box<Expr>),
-  // Additive(Additive)
 }
-
-// #[derive(Debug, Clone)]
-// pub enum Additive {
-//   Multiplicative(Multiplicative),
-//   Add(Multiplicative, Box<Additive>),
-//   Sub(Multiplicative, Box<Additive>),
-// }
-
-// #[derive(Debug, Clone)]
-// pub enum Multiplicative {
-//   Unary(Unary),
-//   Mul(Unary, Box<Multiplicative>),
-//   Div(Unary, Box<Multiplicative>),
-//   Mod(Unary, Box<Multiplicative>),
-// }
-
 #[derive(Debug, Clone)]
 pub enum Unary {
   Int(i32),
