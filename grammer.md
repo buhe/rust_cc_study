@@ -170,3 +170,20 @@ rest6
     : ('<'|'>'|'<='|'>=') additive rest6
     | rest6
 ```
+#### ir
+```
+_T0 = 1
+_T1 = 3
+_T2 = GT _T0, _T1
+_T3 = GET _T0, _T1
+_T4 = LT _T0, _T1
+_T5 = LET _T0, _T1
+_T6 = AND _T0, _T1
+_T7 = OR _T0, _T1
+_T8 = EQUAL _T0, _T1
+_T9 = NOT_EQUAL _T0, _T1
+```
+#### asm
+```
+
+```

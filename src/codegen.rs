@@ -21,8 +21,11 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
         // writeln!(w, "  add sp, sp, -8")?;
       }
       IrStmt::Ret => {
+        let t = r.near();
+        writeln!(w, "  sw {}, -8(sp)", t)?;
+        writeln!(w, "  add sp, sp, -8")?;
         writeln!(w, "  lw a0, 0(sp)")?;
-        // writeln!(w, "  add sp, sp, 8")?; 
+        writeln!(w, "  add sp, sp, 8")?; 
         writeln!(w, "  ret")?;
       }
       IrStmt::Add => {
@@ -56,21 +59,85 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
         let t = r.eat();
         writeln!(w, "  mul, {} ,{} ,{}", t, t2, t1)?;
       }
-        IrStmt::Or => {}
-        IrStmt::And => {}
-        IrStmt::Equal => {}
-        IrStmt::NotEqual => {}
+        IrStmt::Or => {
+          // or t3,t1,t2 ; snez t3,t3
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  or, {} ,{} ,{}", t, t2, t1)?;
+          writeln!(w, "  snez, {} ,{}", t, t)?;
+        }
+        IrStmt::And => {
+          // snez d, s1; sub d, zero, d; and d, d, s2; snez d, d;
+          let t1 = r.near(); // s2
+          let t2 = r.near(); // s1
+          let t = r.eat(); // d
+          writeln!(w, "  snez, {} ,{}", t, t2)?;
+          writeln!(w, "  sub, {} ,zero ,{}", t, t)?;
+          writeln!(w, "  and, {} ,{} ,{}", t, t, t1)?;
+          writeln!(w, "  snez, {} ,{}", t, t)?;
+        }
+        IrStmt::Equal => {
+          // seqz t1,t2	Set EQual to Zero : if t2 == 0 then set t1 to 1 else 0
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  sub, {} ,{} ,{}", t, t2, t1)?;
+          let t3 = r.eat();
+          writeln!(w, "  seqz, {} ,{}", t3, t)?;
+        }
+        IrStmt::NotEqual => {
+          // snez t1,t2	Set Not Equal to Zero : if t2 != 0 then set t1 to 1 else 0
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  sub, {} ,{} ,{}", t, t2, t1)?;
+          let t3 = r.eat();
+          writeln!(w, "  snez, {} ,{}", t3, t)?;
+        }
         IrStmt::Lt => {
-
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  slt, {} ,{} ,{}", t, t2, t1)?;
         }
         IrStmt::Let => {
-
+          // eq
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  sub, {} ,{} ,{}", t, t2, t1)?;
+          let t3 = r.eat();
+          writeln!(w, "  seqz, {} ,{}", t3, t)?;
+          // lt
+          let t4 = r.eat();
+          writeln!(w, "  slt, {} ,{} ,{}", t4, t2, t1)?;
+          // or
+          let t5 = r.eat();
+          writeln!(w, "  or, {} ,{} ,{}", t5, t3, t4)?;
+          writeln!(w, "  snez, {} ,{}", t5, t5)?;
         }
         IrStmt::Gt => {
-
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  sgt, {} ,{} ,{}", t, t2, t1)?;
         }
         IrStmt::Get => {
-          
+          // eq
+          let t1 = r.near();
+          let t2 = r.near();
+          let t = r.eat();
+          writeln!(w, "  sub, {} ,{} ,{}", t, t2, t1)?;
+          let t3 = r.eat();
+          writeln!(w, "  seqz, {} ,{}", t3, t)?;
+          // gt
+          let t4 = r.eat();
+          writeln!(w, "  sgt, {} ,{} ,{}", t4, t2, t1)?;
+          // or
+          let t5 = r.eat();
+          writeln!(w, "  or, {} ,{} ,{}", t5, t3, t4)?;
+          writeln!(w, "  snez, {} ,{}", t5, t5)?;
         }
     }
   }
