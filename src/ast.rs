@@ -20,6 +20,14 @@ pub enum Expr {
   Mul(Box<Expr>, Box<Expr>),
   Div(Box<Expr>, Box<Expr>),
   Mod(Box<Expr>, Box<Expr>),
+  Lt(Box<Expr>, Box<Expr>),
+  Gt(Box<Expr>, Box<Expr>),
+  Let(Box<Expr>, Box<Expr>),
+  Get(Box<Expr>, Box<Expr>),
+  And(Box<Expr>, Box<Expr>),
+  Or(Box<Expr>, Box<Expr>),
+  NotEquals(Box<Expr>, Box<Expr>),
+  Equals(Box<Expr>, Box<Expr>),
 }
 #[derive(Debug, Clone)]
 pub enum Unary {

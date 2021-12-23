@@ -39,7 +39,141 @@ impl Parser {
   }
 
   fn expr(&mut self) -> Expr {
-    self.additive()
+    self.logical_or()
+  }
+
+  fn logical_or(&mut self) -> Expr {
+    let and = self.logical_and();
+    self.rest3(and) 
+  }
+
+  fn rest3(&mut self, e: Expr) -> Expr {
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::Or => {
+        self.pos += 1;
+        let next_t = &self.tokens[self.pos];
+        match next_t.ty {
+            TokenType::Or => {
+              self.pos += 1;
+              let and = self.logical_and();
+              let e1 = Expr::Or(Box::new(e), Box::new(and));
+              self.rest3(e1)
+            }
+            _ => e
+        }
+      }
+      _ => e
+    } 
+  }
+
+  fn logical_and(&mut self) -> Expr {
+    let eq = self.equality();
+    self.rest4(eq)
+  }
+
+  fn rest4(&mut self, e: Expr) -> Expr {
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::And => {
+        self.pos += 1;
+        let next_t = &self.tokens[self.pos];
+        match next_t.ty {
+            TokenType::And => {
+              self.pos += 1;
+              let eq = self.equality();
+              let e1 = Expr::And(Box::new(e), Box::new(eq));
+              self.rest4(e1)
+            }
+            _ => e
+        }
+      }
+      _ => e
+    }
+  }
+
+  fn equality(&mut self) -> Expr {
+    let r = self.relational();
+    self.rest5(r)
+  }
+
+  fn rest5(&mut self, e: Expr) -> Expr {
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::Equal => {
+        self.pos += 1;
+        let next_t = &self.tokens[self.pos];
+        match next_t.ty {
+          TokenType::Equal => {
+            self.pos += 1;
+            let r = self.relational();
+            let e1 = Expr::Equals(Box::new(e), Box::new(r));
+            self.rest5(e1)
+          }
+          _ => e
+        }
+      }
+      TokenType::Not => {
+        self.pos += 1;
+        let next_t = &self.tokens[self.pos];
+        match next_t.ty {
+          TokenType::Equal => {
+            self.pos += 1;
+            let r = self.relational();
+            let e1 = Expr::NotEquals(Box::new(e), Box::new(r));
+            self.rest5(e1)
+          }
+          _ => e
+        }
+       
+      }
+      _ => e
+    }
+  }
+  fn relational(&mut self) -> Expr {
+    let a = self.additive();
+    self.rest6(a)
+  }
+
+  fn rest6(&mut self, e: Expr) -> Expr {
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::Lt => {
+        self.pos += 1;
+        let next_t = &self.tokens[self.pos];
+        match next_t.ty {
+          TokenType::Equal => {
+            self.pos += 1;
+            let a = self.additive();
+            let e1 = Expr::Let(Box::new(e), Box::new(a));
+            self.rest6(e1)
+          }
+          _ => {
+            let a = self.additive();
+            let e1 = Expr::Lt(Box::new(e), Box::new(a));
+            self.rest6(e1)
+          }
+        }
+      }
+      TokenType::Gt => {
+        self.pos += 1;
+        let next_t = &self.tokens[self.pos];
+        match next_t.ty {
+          TokenType::Equal => {
+            self.pos += 1;
+            let a = self.additive();
+            let e1 = Expr::Get(Box::new(e), Box::new(a));
+            self.rest6(e1)
+          }
+          _ => {
+            let a = self.additive();
+            let e1 = Expr::Gt(Box::new(e), Box::new(a));
+            self.rest6(e1)
+          }
+        }
+      }
+      _ => e
+    }
   }
 
   fn additive(&mut self) -> Expr {

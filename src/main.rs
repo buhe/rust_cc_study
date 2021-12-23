@@ -41,4 +41,22 @@ mod tests {
         lang_study::run("int main() { return 1 - 2 - 3 - 4; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn log_1() {
+        lang_study::run("int main() { return 2 >= 1; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+    #[test]
+    fn log_2() {
+        lang_study::run("int main() { return 2 && 1; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+      #[test]
+    fn log_3() {
+        lang_study::run("int main() { return 2 > 1; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

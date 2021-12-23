@@ -19,6 +19,14 @@ pub enum IrStmt {
   Div,
   Mod,
   Neg,
+  Or,
+  And,
+  Equal,
+  NotEqual,
+  Lt,
+  Let,
+  Gt,
+  Get,
   Ldc(i32),
   Ret,
 }
@@ -75,6 +83,46 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr) {
       stmts.push(IrStmt::Sub);
     },
     Expr::Unary(u) => unary(stmts, u),
+    Expr::Lt(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::Lt);
+    }
+    Expr::Gt(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::Gt);
+    }
+    Expr::Let(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::Let);
+    }
+    Expr::Get(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::Get);
+    }
+    Expr::And(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::And);
+    }
+    Expr::Or(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::Or);
+    }
+    Expr::NotEquals(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::NotEqual);
+    }
+    Expr::Equals(e, e1) => {
+      bin_op(stmts, e);
+      bin_op(stmts, e1);
+      stmts.push(IrStmt::Equal);
+    }
   }
 }
 

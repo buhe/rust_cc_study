@@ -20,8 +20,14 @@ pub enum TokenType {
     Neg,           // -
     Add,           // +
     Mul,           // *
-    Div,
-    Mod,
+    Div,            // /
+    Mod,            // %
+    Lt,             // <
+    Gt,             // >
+    // Eq,             // =
+    Not,            // !
+    And,            // &
+    Or,             // |
 }
 
 // Character Kind
@@ -50,6 +56,11 @@ impl TokenType {
             '*' => Some(Mul),
             '/' => Some(Div),
             '%' => Some(Mod),
+            '<' => Some(Lt),
+            '>' => Some(Gt),
+            '!' => Some(Not),
+            '&' => Some(And),
+            '|' => Some(Or),
             _ => None,
         }
     }

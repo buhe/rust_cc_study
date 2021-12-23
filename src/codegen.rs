@@ -56,6 +56,22 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
         let t = r.eat();
         writeln!(w, "  mul, {} ,{} ,{}", t, t2, t1)?;
       }
+        IrStmt::Or => {}
+        IrStmt::And => {}
+        IrStmt::Equal => {}
+        IrStmt::NotEqual => {}
+        IrStmt::Lt => {
+
+        }
+        IrStmt::Let => {
+
+        }
+        IrStmt::Gt => {
+
+        }
+        IrStmt::Get => {
+          
+        }
     }
   }
   Ok(())

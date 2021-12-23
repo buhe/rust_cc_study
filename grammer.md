@@ -115,22 +115,58 @@ _T6 = MOD _T0, _T1
 
 ### step4
 ```
+expression
+    : logical_or
+
+logical_or
+    : logical_and
+    | logical_or '||' logical_and
+
+logical_and
+    : equality
+    | logical_and '&&' equality
+
 equality
-     : relational
-     | equality ('=='|'!=') relational
+    : relational
+    | equality ('=='|'!=') relational
 
- relational
-     : additive
-     | relational ('<'|'>'|'<='|'>=') additive
+relational
+    : additive
+    | relational ('<'|'>'|'<='|'>=') additive
+```
+#### step4 消除左递归
+```
+A = Aa | Ab | r
+消除后
+A = rT
+T = aT | bT | <
+```
+```
+logical_or
+    : logical_and rest3
 
- expression
-     : logical_or
+rest3
+    : '||' logical_and rest3
+    | <
 
- logical_or
-     : logical_and
-     | logical_or '||' logical_and
+logical_and
+    : equality rest4
 
- logical_and
-     : equality
-     | logical_and '&&' equality
+rest4
+    : '&&' equality rest4
+    | <
+
+equality
+    : relational rest5
+
+rest5
+    : ('=='|'!=') relational rest5
+    | <
+
+relational
+    : additive rest6
+
+rest6
+    : ('<'|'>'|'<='|'>=') additive rest6
+    | rest6
 ```
