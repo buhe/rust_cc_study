@@ -139,6 +139,9 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
           writeln!(w, "  or, {} ,{} ,{}", t5, t3, t4)?;
           writeln!(w, "  snez, {} ,{}", t5, t5)?;
         }
+        IrStmt::Assign => {
+          
+        },
     }
   }
   Ok(())

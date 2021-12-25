@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::{ast::*, symbols::SymTab};
 
 #[derive(Debug, Clone)]
 pub struct IrProg {
@@ -29,9 +29,10 @@ pub enum IrStmt {
   Get,
   Ldc(i32),
   Ret,
+  Assign,
 }
 
-pub fn ast2ir(p: &Prog) -> IrProg {
+pub fn ast2ir(p: &Prog, s: &SymTab) -> IrProg {
   IrProg {
     func: func(&p.func),
   }
@@ -39,12 +40,23 @@ pub fn ast2ir(p: &Prog) -> IrProg {
 
 fn func(f: &Func) -> IrFunc {
   let mut stmts = Vec::new();
-  match &f.stmt {
-    Stmt::Ret(e) => {
-      expr(&mut stmts, e);
-      stmts.push(IrStmt::Ret);
-    }
+  for s in (&f.stmt).iter() {
+    match s {
+        Stmt::Ret(e) => {
+          expr(&mut stmts, e);
+          stmts.push(IrStmt::Ret);
+        }
+        Stmt::Expr(e) => {
+          if let Some(ex) = e {
+            expr(&mut stmts, ex);
+          }
+        },
+        Stmt::Decl(_d) => {
+
+        },
   }
+  }
+  
   IrFunc {
     name: f.name.clone(),
     stmts,
@@ -123,6 +135,13 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr) {
       bin_op(stmts, e1);
       stmts.push(IrStmt::Equal);
     }
+    Expr::Assign(id, e) => {
+      let name = &**id;
+      // let expr = &**e;
+      bin_op(stmts, e);
+
+    },
+    Expr::Null => {},
   }
 }
 
@@ -136,5 +155,9 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
         Unary::Primary(y) => {
           expr(stmts, &*y)
         }
+        Unary::Identifier(id) => {
+          // todo check
+
+        },
     }
 }

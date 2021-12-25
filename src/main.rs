@@ -59,4 +59,10 @@ mod tests {
         lang_study::run("int main() { return 2 > 1; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+      #[test]
+    fn decl_1() {
+        lang_study::run("int main() { int x = 2021; return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

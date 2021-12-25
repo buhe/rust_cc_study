@@ -1,11 +1,12 @@
 use crate::ast::*;
 use crate::lexer::{Token, TokenType};
+use crate::symbols::{SymTab, Symbol};
 
-pub fn parsing(tokens: &Vec<Token>) -> Prog {
+pub fn parsing(tokens: &Vec<Token>) -> (Prog, SymTab) {
   let mut parser = Parser::new(tokens.to_vec());
   parser.prog();
   if let Some(prog) = parser.prog {
-    return prog;
+    return (prog, parser.symbols);
   } else {
     panic!("Error in parsing");
   }
@@ -15,6 +16,7 @@ pub struct Parser {
   tokens: Vec<Token>,
   pos: usize,
   prog: Option<Prog>,
+  pub symbols: SymTab,
 }
 
 impl Parser {
@@ -23,8 +25,13 @@ impl Parser {
       tokens,
       pos: 0,
       prog: None,
+      symbols: SymTab::init(),
     }
   }
+
+  // pub fn get_table(&self) -> SymTab {
+  //   self.symbols
+  // }
 
   pub fn bad_token(&self, msg: &str) -> ! {
     panic!("{}", msg);
@@ -33,13 +40,30 @@ impl Parser {
   fn expect(&mut self, ty: TokenType) {
     let t = &self.tokens[self.pos];
     if t.ty != ty {
-      self.bad_token(&format!("{:?} expected", ty));
+      self.bad_token(&format!("{:?} expected , actual {:?}", ty, t.ty));
     }
     self.pos += 1;
   }
 
   fn expr(&mut self) -> Expr {
-    self.logical_or()
+    self.assignment()
+  }
+
+  fn assignment(&mut self) -> Expr {
+    let t = &self.tokens[self.pos];
+    if let TokenType::Ident(id) = &t.ty { // refactor to &&
+      self.pos += 1; // eat id
+      let t2 = &self.tokens[self.pos];
+      if let TokenType::Equal = &t2.ty {
+          self.pos += 1; // eat =
+          Expr::Assign(Box::new(id.to_string()), Box::new(self.expr()))
+      } else {
+          self.pos -= 1;
+          self.logical_or()
+      }
+    } else {
+        self.logical_or()
+    }
   }
 
   fn logical_or(&mut self) -> Expr {
@@ -239,38 +263,103 @@ impl Parser {
   fn unary(&mut self) -> Unary {
     let t = &self.tokens[self.pos];
     self.pos += 1;
-    match t.ty {
+    match &t.ty {
       TokenType::Neg => Unary::Neg(Box::new(self.unary())),
-      TokenType::Num(val) => Unary::Int(val),
+      TokenType::Num(val) => Unary::Int(*val),
       TokenType::LeftParen => {
         let r = Unary::Primary(Box::new(self.expr()));
         self.pos += 1; //skip right paren
         r
       },
-      _ => self.bad_token("number expected from _unary"),
+      TokenType::Ident(id) => {
+        // let s = self.symbols.get(&id.to_string());
+        Unary::Identifier(Box::new(id.clone()))
+      }
+      _ => self.bad_token(&format!("expected , actual {:?}", t.ty)),
     }
   }
 
-  fn stmt(&mut self) -> Stmt {
-    let t = &self.tokens[self.pos];
+  fn _type(&mut self) -> Type{
+      self.expect(TokenType::Int);
+      Type::Integer
+  }
+  fn decl_id(&mut self) -> String {
+    let token = &self.tokens[self.pos];
+    let name;
+    if let TokenType::Ident(id) = &token.ty {
+      name = id
+    } else {
+       self.bad_token("ident expected");
+    }
     self.pos += 1;
+    name.to_string()
+  }
+
+  fn decl_expr(&mut self) -> Option<Expr> {
+    let token = &self.tokens[self.pos];
+    self.pos += 1;
+    match token.ty {
+        TokenType::Equal => {
+          let e = self.expr(); 
+          self.expect(TokenType::Semicolon);
+          Some(e)
+        },
+        TokenType::Semicolon => None, // option expr
+        _ => self.bad_token("; or expr expected from decl"),
+    }
+    
+  }
+  fn decl(&mut self) -> Decl{
+    let t = self._type();
+    let name = self.decl_id();
+    let expr = self.decl_expr();
+    // self.expect(TokenType::Semicolon);
+    self.symbols.put(name.clone(), Symbol::new(name.clone()));  
+    Decl { t, name, expr }
+  }
+  
+  fn stmt(&mut self) -> Option<Stmt> {
+    let t = &self.tokens[self.pos];
     match t.ty {
       TokenType::Return => {
-        let e = Stmt::Ret(self.expr());
+        self.pos += 1; // eat return
+        let e = Stmt::Ret(self.expr()); // return must has expr
         self.expect(TokenType::Semicolon);
-        e
+        Some(e)
       }
-      _ => self.bad_token("stmt error"),
+      TokenType::Int => {
+        let decl = self.decl();
+        Some(Stmt::Decl(decl))
+      }
+      TokenType::Semicolon => {
+        self.pos += 1; // eat ;
+        Some(Stmt::Expr(Some(Expr::Null)))
+      } // branch 0 stmt
+      TokenType::RightBrace => None, // when } finish.
+      _ => {
+          let e = self.expr(); 
+          self.expect(TokenType::Semicolon);
+          Some(Stmt::Expr(Some(e)))
+      }
     }
   }
 
   fn func(&mut self) -> Func {
-    self.expect(TokenType::Int);
+    self._type();
+    // self.expect(TokenType::Int);
     self.expect(TokenType::Ident("main".to_string()));
     self.expect(TokenType::LeftParen);
     self.expect(TokenType::RightParen);
     self.expect(TokenType::LeftBrace);
-    let body = self.stmt();
+    let mut body = vec![];
+    loop { // branch mutli stmt
+        let stmt = self.stmt();
+        match stmt {
+            Some(s) => body.push(s),
+            None => break
+        }
+    }
+    
     self.expect(TokenType::RightBrace);
 
     Func {

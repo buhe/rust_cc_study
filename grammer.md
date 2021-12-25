@@ -187,3 +187,63 @@ _T9 = NOT_EQUAL _T0, _T1
 ```
 
 ```
+
+### step5
+```
+program
+    : function
+
+function
+    : type Identifier '(' ')' '{' statement* '}'
+
+type
+    : 'int'
+
+statement
+    : 'return' expression ';'
+    | expression? ';'
+    | declaration
+
+declaration
+    : type Identifier ('=' expression)? ';'
+
+expression
+    : assignment
+
+assignment
+    : logical_or
+    | Identifier '=' expression
+
+logical_or
+    : logical_and
+    | logical_or '||' logical_and
+
+logical_and
+    : equality
+    | logical_and '&&' equality
+
+equality
+    : relational
+    | equality ('=='|'!=') relational
+
+relational
+    : additive
+    | relational ('<'|'>'|'<='|'>=') additive
+
+additive
+    : multiplicative
+    | additive ('+'|'-') multiplicative
+
+multiplicative
+    : unary
+    | multiplicative ('*'|'/'|'%') unary
+
+unary
+    : primary
+    | ('-'|'~'|'!') unary
+
+primary
+    : Integer
+    | '(' expression ')'
+    | Identifier
+```

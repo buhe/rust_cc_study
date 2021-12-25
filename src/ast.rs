@@ -6,12 +6,27 @@ pub struct Prog {
 #[derive(Debug, Clone)]
 pub struct Func {
   pub name: String,
-  pub stmt: Stmt,
+  pub stmt: Vec<Stmt>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Decl {
+  pub t: Type,
+  pub name: String,
+  pub expr: Option<Expr>,
 }
 #[derive(Debug, Clone)]
 pub enum Stmt {
   Ret(Expr),
+  Expr(Option<Expr>),
+  Decl(Decl),
 }
+
+#[derive(Debug, Clone)]
+pub enum Type {
+  Integer  
+}
+
 #[derive(Debug, Clone)]
 pub enum Expr {
   Unary(Unary),
@@ -28,10 +43,13 @@ pub enum Expr {
   Or(Box<Expr>, Box<Expr>),
   NotEquals(Box<Expr>, Box<Expr>),
   Equals(Box<Expr>, Box<Expr>),
+  Assign(Box<String>, Box<Expr>),
+  Null,
 }
 #[derive(Debug, Clone)]
 pub enum Unary {
   Int(i32),
   Neg(Box<Unary>),
-  Primary(Box<Expr>)
+  Primary(Box<Expr>),
+  Identifier(Box<String>),
 }
