@@ -309,7 +309,7 @@ impl Parser {
     }
     
   }
-  fn decl(&mut self) -> Decl{
+  fn decl(&mut self) -> Decl { // decl is special assign then add assign ir.
     let t = self._type();
     let name = self.decl_id();
     let expr = self.decl_expr();

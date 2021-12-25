@@ -29,16 +29,17 @@ pub enum IrStmt {
   Get,
   Ldc(i32),
   Ret,
-  Assign,
+  Assign(String),
+  Ref(String),
 }
 
-pub fn ast2ir(p: &Prog, s: &SymTab) -> IrProg {
+pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
   IrProg {
-    func: func(&p.func),
+    func: func(&p.func, s),
   }
 }
 
-fn func(f: &Func) -> IrFunc {
+fn func(f: &Func, _table: &mut SymTab) -> IrFunc {
   let mut stmts = Vec::new();
   for s in (&f.stmt).iter() {
     match s {
@@ -51,8 +52,12 @@ fn func(f: &Func) -> IrFunc {
             expr(&mut stmts, ex);
           }
         },
-        Stmt::Decl(_d) => {
-
+        Stmt::Decl(d) => {
+          if let Some(ex) = &d.expr {
+            expr(&mut stmts, ex);
+            let name = &d.name;
+            stmts.push(IrStmt::Assign(name.to_string()));
+          }
         },
   }
   }
@@ -139,7 +144,7 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr) {
       let name = &**id;
       // let expr = &**e;
       bin_op(stmts, e);
-
+      stmts.push(IrStmt::Assign(name.to_string()));
     },
     Expr::Null => {},
   }
@@ -156,8 +161,11 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary) {
           expr(stmts, &*y)
         }
         Unary::Identifier(id) => {
-          // todo check
-
+          // todo check 
+          // table exist
+          // use
+          let name = &**id;
+          stmts.push(IrStmt::Ref(name.to_string()));
         },
     }
 }
