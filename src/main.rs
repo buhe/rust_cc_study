@@ -54,15 +54,27 @@ mod tests {
         &mut std::io::stdout()).unwrap();
     }
 
-      #[test]
+    #[test]
     fn log_3() {
         lang_study::run("int main() { return 2 > 1; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 
-      #[test]
+    #[test]
     fn decl_1() {
         lang_study::run("int main() { int x = 2021; return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+    #[test]
+    fn decl_2() {
+        lang_study::run("int main() { int x = 2021; 1+1; return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+    #[test]
+    fn decl_3() {
+        lang_study::run("int main() { int x = 2021; 1+1;1+x; return x; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 }

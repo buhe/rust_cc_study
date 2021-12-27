@@ -19,7 +19,8 @@ impl SymTab {
     }
 
     pub fn get(&mut self, name: &String) -> &Symbol{
-        self.table.get(name).unwrap()
+        let s = self.table.get(name);
+        s.unwrap()
     }
 }
 

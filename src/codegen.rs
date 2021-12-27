@@ -1,7 +1,7 @@
-use crate::{ir::*, regeister::Regeister};
+use crate::{ir::*, regeister::Regeister, symbols::SymTab};
 use std::io::{Result, Write};
 
-pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
+pub fn write_asm(p: &IrProg, table: &mut SymTab, w: &mut impl Write) -> Result<()> {
   let f = &p.func;
   let mut r = Regeister::init();
   writeln!(w, ".global {}", f.name)?;
@@ -22,10 +22,11 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
       }
       IrStmt::Ret => {
         let t = r.near();
-        writeln!(w, "  sw {}, -8(sp)", t)?;
-        writeln!(w, "  add sp, sp, -8")?;
-        writeln!(w, "  lw a0, 0(sp)")?;
-        writeln!(w, "  add sp, sp, 8")?; 
+        writeln!(w, "  mv a0, {}", t)?;
+        // writeln!(w, "  sw {}, -8(sp)", t)?;
+        // writeln!(w, "  add sp, sp, -8")?;
+        // writeln!(w, "  lw a0, 0(sp)")?;
+        // writeln!(w, "  add sp, sp, 8")?; 
         writeln!(w, "  ret")?;
       }
       IrStmt::Add => {
@@ -140,10 +141,16 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
           writeln!(w, "  snez, {} ,{}", t5, t5)?;
         }
         IrStmt::Assign(id) => {
-          
+          let t2 = r.near();
+          let t = r.eat();
+          // save to table
+          let mut sym = table.get(id);
+          // sym.reg = Some(t.to_string());
+          writeln!(w, "  mv, {} ,{}", t, t2)?;
         },
         IrStmt::Ref(id) => {
-
+          // let sym = table.get(id);
+          
         },
     }
   }
