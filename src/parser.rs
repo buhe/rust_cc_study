@@ -59,11 +59,27 @@ impl Parser {
           Expr::Assign(Box::new(id.to_string()), Box::new(self.expr()))
       } else {
           self.pos -= 1;
-          self.logical_or()
+          self.condition()
       }
     } else {
-        self.logical_or()
+        self.condition()
     }
+  }
+
+  fn condition(&mut self) -> Expr {
+    let or = self.logical_or();
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::Ques => {
+        self.expect(TokenType::Ques);
+        let e = self.expr();
+        self.expect(TokenType::Colon);
+        let c = self.condition();
+        Expr::Cond(Box::new(or), Box::new(e), Box::new(c))
+      },
+      _ => or
+    }
+
   }
 
   fn logical_or(&mut self) -> Expr {
@@ -318,31 +334,57 @@ impl Parser {
     Decl { t, name, expr }
   }
   
-  fn stmt(&mut self) -> Option<Stmt> {
+  fn stmt(&mut self) -> Stmt {
     let t = &self.tokens[self.pos];
     match t.ty {
       TokenType::Return => {
         self.pos += 1; // eat return
         let e = Stmt::Ret(self.expr()); // return must has expr
         self.expect(TokenType::Semicolon);
-        Some(e)
-      }
-      TokenType::Int => {
-        let decl = self.decl();
-        Some(Stmt::Decl(decl))
+        e
       }
       TokenType::Semicolon => {
         self.pos += 1; // eat ;
-        Some(Stmt::Expr(Some(Expr::Null)))
+        Stmt::Expr(Some(Expr::Null))
       } // branch 0 stmt
-      TokenType::RightBrace => None, // when } finish.
+      TokenType::If => {
+        self.expect(TokenType::If);
+        self.expect(TokenType::LeftParen);
+        let condition = self.expr();
+        self.expect(TokenType::RightParen);
+        let then_stmt = self.stmt();
+        let t1 = &self.tokens[self.pos];
+        let mut else_stmt = None;
+        if let TokenType::Else = t1.ty {
+          self.pos += 1; // eat else
+          else_stmt = Some(Box::new(self.stmt()));
+        } 
+        Stmt::If(condition, Box::new(then_stmt), else_stmt)
+      }
       _ => {
-          let e = self.expr(); 
-          self.expect(TokenType::Semicolon);
-          Some(Stmt::Expr(Some(e)))
+        let e = self.expr(); 
+        self.expect(TokenType::Semicolon);
+        Stmt::Expr(Some(e))
       }
     }
   }
+
+  fn block_item(&mut self) -> Option<Block> {
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::Int => {
+        let decl = self.decl();
+        Some(Block::Decl(decl))
+      }
+      TokenType::RightBrace => None, // when } finish.
+      _ => {
+          let s = self.stmt();
+          self.expect(TokenType::Semicolon);
+          Some(Block::Stmt(s))
+      }
+    }
+  }
+
 
   fn func(&mut self) -> Func {
     self._type();
@@ -354,7 +396,7 @@ impl Parser {
     self.expect(TokenType::LeftBrace);
     let mut body = vec![];
     loop { // branch mutli stmt
-        let stmt = self.stmt();
+        let stmt = self.block_item();
         match stmt {
             Some(s) => body.push(s),
             None => break

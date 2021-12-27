@@ -315,3 +315,24 @@ primary
     | '(' expression ')'
     | Identifier
 ```
+#### ir
+```
+main:
+    _T1 = 1
+    _T0 = _T1
+    BEQZ _T0, _L1
+    _T2 = 2
+    _T0 = _T2
+    JUMP _L2
+_L1:
+    _T3 = 3
+    _T0 = _T3
+_L2:
+    return _T0
+```
+#### asm
+```
+step6:             # RISC-V 汇编标签
+    beqz t1, step6 # 如果t1为0，跳转到 step6 标签处
+    j step6        # 无条件跳转到 step6 标签处
+```

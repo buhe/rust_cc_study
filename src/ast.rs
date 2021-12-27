@@ -6,7 +6,7 @@ pub struct Prog {
 #[derive(Debug, Clone)]
 pub struct Func {
   pub name: String,
-  pub stmt: Vec<Stmt>,
+  pub stmt: Vec<Block>,
 }
 
 #[derive(Debug, Clone)]
@@ -16,10 +16,16 @@ pub struct Decl {
   pub expr: Option<Expr>,
 }
 #[derive(Debug, Clone)]
+pub enum Block {
+    Stmt(Stmt),
+    Decl(Decl),
+}
+#[derive(Debug, Clone)]
 pub enum Stmt {
   Ret(Expr),
   Expr(Option<Expr>),
-  Decl(Decl),
+  If(Expr, Box<Stmt>, Option<Box<Stmt>>),
+  // Decl(Decl),
 }
 
 #[derive(Debug, Clone)]
@@ -44,6 +50,7 @@ pub enum Expr {
   NotEquals(Box<Expr>, Box<Expr>),
   Equals(Box<Expr>, Box<Expr>),
   Assign(Box<String>, Box<Expr>),
+  Cond(Box<Expr>, Box<Expr>, Box<Expr>),
   Null,
 }
 #[derive(Debug, Clone)]

@@ -15,8 +15,8 @@ pub fn run(path: String, output: &mut impl Write) -> Result<()> {
   println!("Tokens: {:#?}", t);
    let mut p = parsing(&t);
      println!("Prog: {:#?}", &p.0);
-     let p_ir = ir::ast2ir(&p.0, &mut p.1);
-     println!("IR Prog: {:#?}", &p_ir);
-     codegen::write_asm(&p_ir,&mut p.1, output)
+     let mut p_ir = ir::ast2ir(&p.0, &mut p.1);
+     println!("IR Prog: {:#?}", &p_ir.0);
+     codegen::write_asm(&p_ir.0,&mut p_ir.1,&mut p.1, output)
   // Ok(())
 }

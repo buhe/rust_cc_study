@@ -28,6 +28,10 @@ pub enum TokenType {
     Not,            // !
     And,            // &
     Or,             // |
+    If,             // if
+    Else,             // else
+    Colon,          // :
+    Ques,           // ?
 }
 
 // Character Kind
@@ -61,6 +65,8 @@ impl TokenType {
             '!' => Some(Not),
             '&' => Some(And),
             '|' => Some(Or),
+            ':' => Some(Colon),
+            '?' => Some(Ques),
             _ => None,
         }
     }
@@ -104,6 +110,8 @@ fn keyword_map() -> HashMap<String, TokenType> {
     let mut map = HashMap::new();
     map.insert("int".into(), TokenType::Int);
     map.insert("return".into(), TokenType::Return);
+    map.insert("if".into(), TokenType::If);
+    map.insert("else".into(), TokenType::Else);
     map
 }
 
