@@ -83,4 +83,11 @@ mod tests {
         lang_study::run("int main() { int x = 2021; int y = 1+1;1+x; return y; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    #[should_panic]
+    fn decl_5() {
+        lang_study::run("int main() { return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }
