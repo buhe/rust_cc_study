@@ -90,4 +90,10 @@ mod tests {
         lang_study::run("int main() { return x; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn decl_6() {
+        lang_study::run("int z() { int x = 2021; return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

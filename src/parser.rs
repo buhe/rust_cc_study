@@ -283,7 +283,7 @@ impl Parser {
       self.expect(TokenType::Int);
       Type::Integer
   }
-  fn decl_id(&mut self) -> String {
+  fn identifier(&mut self) -> String {
     let token = &self.tokens[self.pos];
     let name;
     if let TokenType::Ident(id) = &token.ty {
@@ -311,7 +311,7 @@ impl Parser {
   }
   fn decl(&mut self) -> Decl { // decl is special assign then add assign ir.
     let t = self._type();
-    let name = self.decl_id();
+    let name = self.identifier();
     let expr = self.decl_expr();
     // self.expect(TokenType::Semicolon);
     self.symbols.put(name.clone(), Symbol::new(name.clone()));  
@@ -347,7 +347,8 @@ impl Parser {
   fn func(&mut self) -> Func {
     self._type();
     // self.expect(TokenType::Int);
-    self.expect(TokenType::Ident("main".to_string()));
+    let ident = self.identifier();
+    // self.expect(TokenType::Ident("main".to_string()));
     self.expect(TokenType::LeftParen);
     self.expect(TokenType::RightParen);
     self.expect(TokenType::LeftBrace);
@@ -363,7 +364,7 @@ impl Parser {
     self.expect(TokenType::RightBrace);
 
     Func {
-      name: "main".to_string(),
+      name: ident,
       stmt: body,
     }
   }
