@@ -1,4 +1,4 @@
-use crate::{ir::*, regeister::Regeister, symbols::SymTab};
+use crate::{ir::*, regeister::Regeister, symbols::{SymTab}};
 use std::io::{Result, Write};
 
 pub fn write_asm(p: &IrProg, table: &mut SymTab, w: &mut impl Write) -> Result<()> {
@@ -144,13 +144,13 @@ pub fn write_asm(p: &IrProg, table: &mut SymTab, w: &mut impl Write) -> Result<(
           let t2 = r.near();
           let t = r.eat();
           // save to table
-          let mut sym = table.get(id);
-          // sym.reg = Some(t.to_string());
+          let entry = table.entry(id);
+          entry.and_modify(|s| s.reg = Some(t.to_string()) );
           writeln!(w, "  mv, {} ,{}", t, t2)?;
         },
         IrStmt::Ref(id) => {
-          // let sym = table.get(id);
-          
+          let reg = table.get(id).reg.as_ref().unwrap();
+          r.put_near(reg.clone());
         },
     }
   }

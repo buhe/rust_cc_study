@@ -1,4 +1,4 @@
-use std::{collections::HashMap};
+use std::{collections::{HashMap, hash_map::Entry}};
 
 pub struct SymTab {
     table: HashMap<String, Symbol>
@@ -18,9 +18,12 @@ impl SymTab {
         self.table.contains_key(name)
     }
 
+    pub fn entry(&mut self, name: &String) -> Entry<String, Symbol>{
+      self.table.entry(name.to_string())
+    }
+
     pub fn get(&mut self, name: &String) -> &Symbol{
-        let s = self.table.get(name);
-        s.unwrap()
+      self.table.get(name).unwrap()
     }
 }
 
