@@ -5,9 +5,7 @@ fn main() -> std::io::Result<()> {
     // println!("Hello, world!");
     // todp: write to asm.S file
     let mut f = File::create("asm.S")?;
-    lang_study::run("int main() {
-    return --2021 + 33 / 11;
-}".to_string(), &mut f)
+    lang_study::run("int main() { int x = 1; if (x) x = 2; else x = 3; return x; }".to_string(), &mut f)
 
 }
 
