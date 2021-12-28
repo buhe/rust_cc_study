@@ -142,11 +142,17 @@ pub fn write_asm(p: &IrProg, bl: &mut BranchLabel ,table: &mut SymTab, w: &mut i
         }
         IrStmt::Assign(id) => {
           let t2 = r.near();
-          let t = r.eat();
+          
           // save to table
           let entry = table.entry(id);
-          entry.and_modify(|s| s.reg = Some(t.to_string()) );
-          writeln!(w, "  mv {} ,{}", t, t2)?;
+          entry.and_modify(|s| {
+            if s.reg.is_none() {
+              let t = r.eat();
+              s.reg = Some(t.to_string()) 
+            } 
+          });
+          let s = table.get(id);
+          writeln!(w, "  mv {} ,{}", s.reg.as_ref().unwrap(), t2)?;
         },
         IrStmt::Ref(id) => {
           let reg = table.get(id).reg.as_ref().unwrap();
