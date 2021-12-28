@@ -248,27 +248,29 @@ impl BranchLabel {
     self.queue.pop_back().unwrap()
   }
 
-  fn reset(&mut self) {
-    self.counter = 0;
-  }
+  // fn reset(&mut self) {
+  //   self.counter = 0;
+  // }
 }
 
-mod tests {
-    use super::BranchLabel;
+// mod tests {
+//     use crate::ir::BranchLabel;
 
-    #[test]
-    fn test_get() {
-      let mut t = BranchLabel::init();
-      assert_eq!("L1", t.get(crate::ir::LabelType::Other));
-      assert_eq!("L2", t.get(crate::ir::LabelType::Else));
-    }
+    
 
-    #[test]
-    fn test_reset() {
-      let mut t = BranchLabel::init();
-      assert_eq!("L1", t.get(crate::ir::LabelType::Other));
-      assert_eq!("L2", t.get(crate::ir::LabelType::Else));
-      t.reset();
-      assert_eq!("L1", t.get(crate::ir::LabelType::Other));
-    }
-}
+//     #[test]
+//     fn test_get() {
+//       let mut t = BranchLabel::init();
+//       assert_eq!("L1", t.get(crate::ir::LabelType::Other));
+//       assert_eq!("L2", t.get(crate::ir::LabelType::Else));
+//     }
+
+//     #[test]
+//     fn test_reset() {
+//       let mut t = BranchLabel::init();
+//       assert_eq!("L1", t.get(crate::ir::LabelType::Other));
+//       assert_eq!("L2", t.get(crate::ir::LabelType::Else));
+//       t.reset();
+//       assert_eq!("L1", t.get(crate::ir::LabelType::Other));
+//     }
+// }

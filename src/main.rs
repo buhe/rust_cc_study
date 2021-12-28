@@ -1,9 +1,14 @@
+use std::fs::File;
+
 
 fn main() -> std::io::Result<()> {
     // println!("Hello, world!");
+    // todp: write to asm.S file
+    let mut f = File::create("asm.S")?;
     lang_study::run("int main() {
     return --2021 + 33 / 11;
-}".to_string(), &mut std::io::stdout())
+}".to_string(), &mut f)
+
 }
 
 mod tests {
