@@ -336,3 +336,17 @@ step6:             # RISC-V 汇编标签
     beqz t1, step6 # 如果t1为0，跳转到 step6 标签处
     j step6        # 无条件跳转到 step6 标签处
 ```
+### step7
+```
+function
+    : type Identifier '(' ')' compound_statement
+
+compound_statement
+    : '{' block_item* '}'
+
+statement
+    : 'return' expression ';'
+    | expression? ';'
+    | 'if' '(' expression ')' statement ('else' statement)?
+    | compound_statement
+```

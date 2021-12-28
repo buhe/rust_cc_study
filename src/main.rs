@@ -117,4 +117,10 @@ mod tests {
         lang_study::run("int z() { int x = 1 ? 2 : 3; return x; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn scope_1() {
+        lang_study::run("int main() { int x = 1;   { x = 2; int x = 3; } x = 4; return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

@@ -39,3 +39,7 @@ impl Symbol {
         }
     }
 }
+
+pub struct Scope {
+    
+}
