@@ -141,7 +141,7 @@ pub fn write_asm(p: &IrProg, bl: &mut BranchLabel ,table: &mut SymTab, w: &mut i
           writeln!(w, "  snez {} ,{}", t5, t5)?;
         }
         IrStmt::Assign(id) => {
-          let t2 = r.near();
+          let t2 = r.near();// todo, noy use near api
           
           // save to table
           let entry = table.entry(id);

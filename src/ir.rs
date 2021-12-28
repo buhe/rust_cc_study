@@ -54,7 +54,7 @@ fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel) -> IrFunc {
         },
         Block::Decl(d) => {
           if let Some(ex) = &d.expr {
-            expr(&mut stmts, ex, table);
+            expr(&mut stmts, ex, table, bl);
             let name = &d.name;
             stmts.push(IrStmt::Assign(name.to_string()));
           }
@@ -65,19 +65,19 @@ fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel) -> IrFunc {
   fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabel) {
     match s {
         Stmt::Ret(e) => {
-          expr(stmts, e, table);
+          expr(stmts, e, table, bl);
           stmts.push(IrStmt::Ret);
         }
         Stmt::Expr(e) => {
           if let Some(ex) = e {
-            expr(stmts, ex, table);
+            expr(stmts, ex, table, bl);
           }
         },
         Stmt::If(e, t, l) => {
           // 1. create label
           // 2. add beq ir
           // 3. when has else, add jmp ir 
-          expr(stmts, e, table);
+          expr(stmts, e, table, bl);
           stmts.push(IrStmt::Beq);
           stmt(stmts, t, table, bl);
           if l.is_some() {
@@ -97,100 +97,107 @@ fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel) -> IrFunc {
   }
 }
 
-fn expr(stmts: &mut Vec<IrStmt>, e: &Expr, table: &mut SymTab) {
-  bin_op(stmts, e, table)
+fn expr(stmts: &mut Vec<IrStmt>, e: &Expr, table: &mut SymTab, bl: &mut BranchLabel) {
+  bin_op(stmts, e, table, bl)
 }
 
-fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab) {
+fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchLabel) {
   match m {
     Expr::Mul(u, m1) => {
-      bin_op(stmts, u, table);
-      bin_op(stmts, m1, table);
+      bin_op(stmts, u, table, bl);
+      bin_op(stmts, m1, table, bl);
       stmts.push(IrStmt::Mul);
     },
     Expr::Div(u, m1) => {
-      bin_op(stmts, u, table);
-      bin_op(stmts, m1, table);
+      bin_op(stmts, u, table, bl);
+      bin_op(stmts, m1, table, bl);
       stmts.push(IrStmt::Div);
     },
     Expr::Mod(u, m1) => {
-      bin_op(stmts, u, table);
-      bin_op(stmts, m1, table);
+      bin_op(stmts, u, table, bl);
+      bin_op(stmts, m1, table, bl);
       stmts.push(IrStmt::Mod);
     },
     Expr::Add(m,a1) => {
-      bin_op(stmts, m, table);
-      bin_op(stmts, a1, table);
+      bin_op(stmts, m, table, bl);
+      bin_op(stmts, a1, table, bl);
       stmts.push(IrStmt::Add);
     },
     Expr::Sub(m,a1)=> {
-      bin_op(stmts, m, table);
-      bin_op(stmts, a1, table);
+      bin_op(stmts, m, table, bl);
+      bin_op(stmts, a1, table, bl);
       stmts.push(IrStmt::Sub);
     },
-    Expr::Unary(u) => unary(stmts, u, table),
+    Expr::Unary(u) => unary(stmts, u, table, bl),
     Expr::Lt(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Lt);
     }
     Expr::Gt(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Gt);
     }
     Expr::Let(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Let);
     }
     Expr::Get(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Get);
     }
     Expr::And(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::And);
     }
     Expr::Or(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Or);
     }
     Expr::NotEquals(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::NotEqual);
     }
     Expr::Equals(e, e1) => {
-      bin_op(stmts, e, table);
-      bin_op(stmts, e1, table);
+      bin_op(stmts, e, table, bl);
+      bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Equal);
     }
     Expr::Assign(id, e) => {
       let name = &**id;
       // let expr = &**e;
-      bin_op(stmts, e, table);
+      bin_op(stmts, e, table, bl);
       stmts.push(IrStmt::Assign(name.to_string()));
     },
     Expr::Null => {},
     Expr::Cond(condition, then, other) => {
       // like if-else
+      expr(stmts, condition, table, bl);
+      stmts.push(IrStmt::Beq);
+      expr(stmts, then, table, bl);
+      stmts.push(IrStmt::Jmp);
+      stmts.push(IrStmt::Label(bl.get(LabelType::Else)));
+      expr(stmts, other, table, bl);
+      stmts.push(IrStmt::Label(bl.get(LabelType::Other)));
     },
   }
 }
 
-fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab) {
+fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut BranchLabel) {
   match u {
         Unary::Int(y) => stmts.push(IrStmt::Ldc(*y)),
         Unary::Neg(y) => { 
-          unary(stmts, &*y, table);
+          unary(stmts, &*y, table, bl);
           stmts.push(IrStmt::Neg);
         },
         Unary::Primary(y) => {
-          expr(stmts, &*y, table)
+          expr(stmts, &*y, table, bl)
         }
         Unary::Identifier(id) => {
           // check decl, table exist
