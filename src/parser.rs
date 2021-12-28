@@ -372,16 +372,9 @@ impl Parser {
   fn block_item(&mut self) -> Option<Block> {
     let t = &self.tokens[self.pos];
     match t.ty {
-      TokenType::Int => {
-        let decl = self.decl();
-        Some(Block::Decl(decl))
-      }
+      TokenType::Int => Some(Block::Decl(self.decl())),
       TokenType::RightBrace => None, // when } finish.
-      _ => {
-          let s = self.stmt();
-          self.expect(TokenType::Semicolon);
-          Some(Block::Stmt(s))
-      }
+      _ => Some(Block::Stmt(self.stmt()))
     }
   }
 

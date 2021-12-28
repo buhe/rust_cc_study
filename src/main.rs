@@ -102,4 +102,10 @@ mod tests {
         lang_study::run("int z() { int x = 1; if (x) x = 2; else x = 3; return x; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn if_2() {
+        lang_study::run("int z() { if (3) 4; else 5; return 6; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }
