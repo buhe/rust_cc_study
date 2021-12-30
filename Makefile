@@ -4,4 +4,7 @@ test:
     spike --isa=RV32G env/pk out
 
 dump:
-	
+	rust-objdump --arch-name=riscv32 -x out
+
+readelf:
+	riscv-gcc/bin/riscv64-unknown-elf-readelf -a out
