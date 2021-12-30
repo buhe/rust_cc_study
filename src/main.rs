@@ -1,12 +1,13 @@
-use std::fs::File;
+use std::fs::{File, self};
 
 
 fn main() -> std::io::Result<()> {
     // println!("Hello, world!");
     // todp: write to asm.S file
     let mut f = File::create("asm.S")?;
-    lang_study::run("int main() { int x = 1; if (x) x = 2; else x = 3; return x; }".to_string(), &mut f)
-
+    lang_study::run("int main() { int x = 1; if (x) x = 2; else x = 3; return x; }".to_string(), &mut f)?;
+    println!("asm:\n {}", fs::read_to_string("asm.S")?);
+    Ok(())
 }
 
 mod tests {

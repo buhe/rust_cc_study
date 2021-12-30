@@ -6,7 +6,7 @@ pub struct Regeister {
 impl Regeister {
     pub fn init() -> Self {
         Self {
-            stack: vec!["t9".to_string(),"t8".to_string(),"t7".to_string(),"t6".to_string(),"t5".to_string(),"t4".to_string(),"t3".to_string(),"t2".to_string(),"t1".to_string(),"t0".to_string()],
+            stack: vec!["s3".to_string(),"s2".to_string(),"s1".to_string(),"t6".to_string(),"t5".to_string(),"t4".to_string(),"t3".to_string(),"t2".to_string(),"t1".to_string()],
             near_stack: vec![]
         }
     }
@@ -25,7 +25,4 @@ impl Regeister {
         self.near_stack.push(str);
     }    
 
-    // pub fn take<'a,'b>(&'a mut self) -> &'b str {
-    //     self.stack[self.stack.len() - 1]
-    // }
 }
