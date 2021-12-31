@@ -6,7 +6,7 @@ pub struct Prog {
 #[derive(Debug, Clone)]
 pub struct Func {
   pub name: String,
-  pub stmt: Vec<Block>,
+  pub stmt: Vec<BlockItem>,
 }
 
 #[derive(Debug, Clone)]
@@ -16,7 +16,7 @@ pub struct Decl {
   pub expr: Option<Expr>,
 }
 #[derive(Debug, Clone)]
-pub enum Block {
+pub enum BlockItem {
     Stmt(Stmt),
     Decl(Decl),
 }
@@ -25,6 +25,7 @@ pub enum Stmt {
   Ret(Expr),
   Expr(Option<Expr>),
   If(Expr, Box<Stmt>, Option<Box<Stmt>>),
+  Block(Vec<BlockItem>),
   // Decl(Decl),
 }
 

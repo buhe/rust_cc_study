@@ -361,6 +361,9 @@ impl Parser {
         } 
         Stmt::If(condition, Box::new(then_stmt), else_stmt)
       }
+      TokenType::LeftBrace => {
+        Stmt::Block(self.compound_statement())
+      }
       _ => {
         let e = self.expr(); 
         self.expect(TokenType::Semicolon);
@@ -369,16 +372,28 @@ impl Parser {
     }
   }
 
-  fn block_item(&mut self) -> Option<Block> {
+  fn block_item(&mut self) -> Option<BlockItem> {
     let t = &self.tokens[self.pos];
     match t.ty {
-      TokenType::Int => Some(Block::Decl(self.decl())),
+      TokenType::Int => Some(BlockItem::Decl(self.decl())),
       TokenType::RightBrace => None, // when } finish.
-      _ => Some(Block::Stmt(self.stmt()))
+      _ => Some(BlockItem::Stmt(self.stmt()))
     }
   }
 
-
+  fn compound_statement(&mut self) -> Vec<BlockItem> {
+    self.expect(TokenType::LeftBrace);
+    let mut block_items = vec![];
+    loop { // branch mutli stmt
+        let stmt = self.block_item();
+        match stmt {
+            Some(s) => block_items.push(s),
+            None => break
+        }
+    }
+    self.expect(TokenType::RightBrace);
+    block_items
+  }
   fn func(&mut self) -> Func {
     self._type();
     // self.expect(TokenType::Int);
@@ -386,18 +401,7 @@ impl Parser {
     // self.expect(TokenType::Ident("main".to_string()));
     self.expect(TokenType::LeftParen);
     self.expect(TokenType::RightParen);
-    self.expect(TokenType::LeftBrace);
-    let mut body = vec![];
-    loop { // branch mutli stmt
-        let stmt = self.block_item();
-        match stmt {
-            Some(s) => body.push(s),
-            None => break
-        }
-    }
-    
-    self.expect(TokenType::RightBrace);
-
+    let body = self.compound_statement();
     Func {
       name: ident,
       stmt: body,
