@@ -139,22 +139,23 @@ pub fn write_asm(p: &IrProg, bl: &mut BranchLabel ,table: &mut SymTab, w: &mut i
           writeln!(w, "  or {} ,{} ,{}", t5, t3, t4)?;
           writeln!(w, "  snez {} ,{}", t5, t5)?;
         }
-        IrStmt::Assign(id) => {
+        IrStmt::Assign(scope, id) => {
           let t2 = r.near();// todo, noy use near api
           
-          // save to table
-          let entry = table.entry(id);
+          // save
+          let entry = table.entry(scope, id);
           entry.and_modify(|s| {
             if s.reg.is_none() {
               let t = r.eat();
               s.reg = Some(t.to_string()) 
             } 
           });
-          let s = table.get(id);
+          let s = table.get(scope, id);
           writeln!(w, "  addi {} ,{}, 0", s.reg.as_ref().unwrap(), t2)?;
         },
-        IrStmt::Ref(id) => {
-          let reg = table.get(id).reg.as_ref().unwrap();
+        IrStmt::Ref(scope,id) => {
+          // use
+          let reg = table.get(scope, id).reg.as_ref().unwrap();
           r.put_near(reg.clone());
         },
         IrStmt::Beq => {

@@ -56,7 +56,9 @@ impl Parser {
       let t2 = &self.tokens[self.pos];
       if let TokenType::Equal = &t2.ty {
           self.pos += 1; // eat =
-          Expr::Assign(Box::new(id.to_string()), Box::new(self.expr()))
+          // todo assert
+          let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
+          Expr::Assign(Box::new(scope),Box::new(id.to_string()), Box::new(self.expr()))
       } else {
           self.pos -= 1;
           self.condition()
@@ -289,7 +291,8 @@ impl Parser {
       },
       TokenType::Ident(id) => {
         // let s = self.symbols.get(&id.to_string());
-        Unary::Identifier(Box::new(id.clone()))
+        let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
+        Unary::Identifier(Box::new(scope),Box::new(id.clone()))
       }
       _ => self.bad_token(&format!("expected , actual {:?}", t.ty)),
     }
@@ -329,9 +332,9 @@ impl Parser {
     let t = self._type();
     let name = self.identifier();
     let expr = self.decl_expr();
-    // self.expect(TokenType::Semicolon);
+    let scope = self.symbols.current_scope.clone();
     self.symbols.put(name.clone(), Symbol::new(name.clone()));  
-    Decl { t, name, expr }
+    Decl { t, name, expr, scope }
   }
   
   fn stmt(&mut self) -> Stmt {
@@ -383,6 +386,7 @@ impl Parser {
 
   fn compound_statement(&mut self) -> Vec<BlockItem> {
     self.expect(TokenType::LeftBrace);
+    self.symbols.enter_scope();
     let mut block_items = vec![];
     loop { // branch mutli stmt
         let stmt = self.block_item();
@@ -392,6 +396,7 @@ impl Parser {
         }
     }
     self.expect(TokenType::RightBrace);
+    self.symbols.leave_scope();
     block_items
   }
   fn func(&mut self) -> Func {

@@ -77,8 +77,9 @@ pub enum IrStmt {
   Get,
   Ldc(i32),
   Ret,
-  Assign(String),
-  Ref(String),
+  // env, id
+  Assign(Vec<u32>, String),
+  Ref(Vec<u32>, String),
   Beq,
   Jmp,
   Label(String),
@@ -110,7 +111,8 @@ fn block(stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &
           if let Some(ex) = &d.expr {
             expr(stmts, ex, table, bl);
             let name = &d.name;
-            stmts.push(IrStmt::Assign(name.to_string()));
+            let scope = &d.scope;
+            stmts.push(IrStmt::Assign(scope.to_vec(), name.to_string()));
           }
         },
     }
@@ -221,11 +223,11 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       bin_op(stmts, e1, table, bl);
       stmts.push(IrStmt::Equal);
     }
-    Expr::Assign(id, e) => {
+    Expr::Assign(env,id, e) => {
       let name = &**id;
-      // let expr = &**e;
+      let n = &**env;
       bin_op(stmts, e, table, bl);
-      stmts.push(IrStmt::Assign(name.to_string()));
+      stmts.push(IrStmt::Assign(n.to_vec(), name.to_string()));
     },
     Expr::Null => {},
     Expr::Cond(condition, then, other) => {
@@ -251,12 +253,12 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut Branch
         Unary::Primary(y) => {
           expr(stmts, &*y, table, bl)
         }
-        Unary::Identifier(id) => {
+        Unary::Identifier(env, id) => {
           // check decl, table exist
           let name = &**id;
           // use var
-          assert!(table.extis(name));
-          stmts.push(IrStmt::Ref(name.to_string()));
+          assert!(table.extis(env, name).0);
+          stmts.push(IrStmt::Ref(env.to_vec(), name.to_string()));
         },
     }
 }

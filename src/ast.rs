@@ -14,6 +14,7 @@ pub struct Decl {
   pub t: Type,
   pub name: String,
   pub expr: Option<Expr>,
+  pub scope: Vec<u32>,
 }
 #[derive(Debug, Clone)]
 pub enum BlockItem {
@@ -50,7 +51,7 @@ pub enum Expr {
   Or(Box<Expr>, Box<Expr>),
   NotEquals(Box<Expr>, Box<Expr>),
   Equals(Box<Expr>, Box<Expr>),
-  Assign(Box<String>, Box<Expr>),
+  Assign(Box<Vec<u32>>, Box<String>, Box<Expr>),
   Cond(Box<Expr>, Box<Expr>, Box<Expr>),
   Null,
 }
@@ -59,5 +60,5 @@ pub enum Unary {
   Int(i32),
   Neg(Box<Unary>),
   Primary(Box<Expr>),
-  Identifier(Box<String>),
+  Identifier(Box<Vec<u32>>, Box<String>),
 }
