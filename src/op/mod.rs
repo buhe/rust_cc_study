@@ -1,5 +1,7 @@
-mod cfg;
+use crate::ir::IrProg;
 
-pub fn op() {
-    cfg::op();
+mod dataflow;
+
+pub fn op(p: &IrProg) -> &IrProg {
+    dataflow::dataflow(p)
 }

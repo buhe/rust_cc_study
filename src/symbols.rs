@@ -1,5 +1,6 @@
 use std::{collections::{HashMap, hash_map::Entry}};
 
+#[derive(Debug)]
 pub struct SymTab {
     table: HashMap<Vec<u32>, HashMap<String, Symbol>>,
     scope_counter: HashMap<u32, u32>,
