@@ -111,18 +111,15 @@ fn block(stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &
                  let name = &d.name;
             let scope = &d.scope;
              // save
-          let entry = table.entry(scope, name);
-          entry.and_modify(|s| {
-            if s.reg.is_none() {
-              let t = r.eat();
-              s.reg = Some(t.to_string()) 
-            } 
-          });
+            let entry = table.entry(scope, name);
+            entry.and_modify(|s| {
+              if s.reg.is_none() {
+                let t = r.eat();
+                s.reg = Some(t.to_string()) 
+              } 
+            });
             expr(stmts, ex, table, bl, r);
-       
-
             let t2 = r.near();// todo, noy use near api
-
             stmts.push(IrStmt::Assign(scope.to_vec(), name.to_string(),t2));
           }
         },
@@ -297,13 +294,13 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       let name = &**id;
       let n = &**env;
       // save
-          let entry = table.entry(n, name);
-          entry.and_modify(|s| {
-            if s.reg.is_none() {
-              let t = r.eat();
-              s.reg = Some(t.to_string()) 
-            } 
-          });
+      let entry = table.entry(n, name);
+      entry.and_modify(|s| {
+        if s.reg.is_none() {
+          let t = r.eat();
+          s.reg = Some(t.to_string()) 
+        } 
+      });
       bin_op(stmts, e, table, bl, r);
       let t2 = r.near();// todo, noy use near api
  
