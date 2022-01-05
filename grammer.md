@@ -357,5 +357,23 @@ ref: https://decaf-lang.github.io/minidecaf-tutorial/docs/step7/dataflow.html
 
 #### 构建
 
+### step8
+```
+statement
+    : 'return' expression ';'
+    | expression? ';'
+    | 'if' '(' expression ')' statement ('else' statement)?
+    | compound_statement
+    
+    | 'for' '(' expression? ';' expression? ';' expression? ')' statement
+    | 'for' '(' declaration expression? ';' expression? ')' statement
+    | 'while' '(' expression ')' statement
+    | 'do' statement 'while' '(' expression ')' ';'
+    | 'break' ';'
+    | 'continue' ';'
+```
+for 语句需要提取公因式
+
+
 
 
