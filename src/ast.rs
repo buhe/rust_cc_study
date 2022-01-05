@@ -27,6 +27,10 @@ pub enum Stmt {
   Expr(Option<Expr>),
   If(Expr, Box<Stmt>, Option<Box<Stmt>>),
   Block(Vec<BlockItem>),
+  For(Option<Expr>,Option<Expr>,Option<Expr>, Box<Stmt>),
+  While(Expr, Box<Stmt>),
+  Continue,
+  Break,
   // Decl(Decl),
 }
 

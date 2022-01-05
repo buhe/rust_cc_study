@@ -160,6 +160,10 @@ fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabe
       Stmt::Block(bts) => {
         block(stmts, bts, table, bl, r)
       },
+    Stmt::For(_, _, _, _) => todo!(),
+    Stmt::While(_, _) => todo!(),
+    Stmt::Continue => todo!(),
+    Stmt::Break => todo!(),
   }
 }
 

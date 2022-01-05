@@ -364,6 +364,61 @@ impl Parser {
         } 
         Stmt::If(condition, Box::new(then_stmt), else_stmt)
       }
+      TokenType::For => {
+        self.expect(TokenType::For);
+        self.expect(TokenType::LeftParen);
+        let mut init = None;
+        let t = &self.tokens[self.pos];
+        match t.ty {
+            TokenType::Semicolon => {
+
+            }
+            _ => {
+              init = Some(self.expr());
+            }
+        }
+        self.expect(TokenType::Semicolon);
+        let mut cond = None;
+        let t = &self.tokens[self.pos];
+        match t.ty {
+            TokenType::Semicolon => {
+
+            }
+            _ => {
+              cond = Some(self.expr());
+            }
+        }
+        self.expect(TokenType::Semicolon);
+        let mut update = None;
+        let t = &self.tokens[self.pos];
+        match t.ty {
+            TokenType::Semicolon => {
+
+            }
+            _ => {
+              update = Some(self.expr());
+            }
+        }
+        self.expect(TokenType::Semicolon);
+        let stmt = self.stmt();
+        Stmt::For(init, cond, update, Box::new(stmt))
+      }
+      TokenType::While => {
+        self.expect(TokenType::While);
+        self.expect(TokenType::LeftParen);
+        let condition = self.expr();
+        self.expect(TokenType::RightParen);
+        let stmt = self.stmt();
+        Stmt::While(condition, Box::new(stmt))
+      }
+      TokenType::Continue => {
+        self.expect(TokenType::Continue);
+        Stmt::Continue
+      }
+      TokenType::Break => {
+        self.expect(TokenType::Break);
+        Stmt::Break
+      }
       TokenType::LeftBrace => {
         Stmt::Block(self.compound_statement())
       }
