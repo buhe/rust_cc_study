@@ -20,6 +20,6 @@ pub fn run(path: String, output: &mut impl Write) -> Result<()> {
   println!("Prog: {:#?}", &p.0);
   let mut p_ir = ir::ast2ir(&p.0, &mut p.1);
   println!("IR Prog: {:#?}", &p_ir.0);
-  let ir = op(&p_ir.0);
+  let ir = op(&p_ir.0, &mut p.1);
   codegen::write_asm(&ir,&mut p_ir.1,&mut p.1, output)
 }

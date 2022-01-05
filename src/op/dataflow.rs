@@ -1,35 +1,81 @@
-use crate::{ir::{IrStmt, IrProg, IrFunc}, regeister::Regeister};
+use crate::{ir::{IrStmt, IrProg, IrFunc}, regeister::Regeister, symbols::SymTab};
 
-pub fn dataflow(p: &IrProg) -> IrProg {
+pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
     let mut r = Regeister::init();
     let mut stmts: Vec<IrStmt> = Vec::new();
     for s in p.func.stmts.iter() {
          match s {
-            IrStmt::Add(_, _, _) => todo!(),
-            IrStmt::Sub(_, _, _) => todo!(),
-            IrStmt::Mul(_, _, _) => todo!(),
-            IrStmt::Div(_, _, _) => todo!(),
-            IrStmt::Mod(_, _, _) => todo!(),
-            IrStmt::Neg(_, _) => todo!(),
-            IrStmt::Or(_, _, _) => todo!(),
-            IrStmt::And(_, _, _) => todo!(),
-            IrStmt::Equal(_, _, _, _, _) => todo!(),
-            IrStmt::NotEqual(_, _, _, _) => todo!(),
-            IrStmt::Lt(_, _, _) => todo!(),
-            IrStmt::Let(_, _, _, _, _, _, _) => todo!(),
-            IrStmt::Gt(_, _, _) => todo!(),
-            IrStmt::Get(_, _, _, _, _, _) => todo!(),
+            IrStmt::Add(_, _, _) => {
+                stmts.push(IrStmt::Add(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Sub(_, _, _) => {
+                stmts.push(IrStmt::Sub(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Mul(_, _, _) => {
+                stmts.push(IrStmt::Mul(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Div(_, _, _) => {
+                stmts.push(IrStmt::Div(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Mod(_, _, _) => {
+                stmts.push(IrStmt::Mod(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Neg(_, _) => {
+                stmts.push(IrStmt::Neg(r.near(), r.eat()));
+            }
+            IrStmt::Or(_, _, _) => {
+                stmts.push(IrStmt::Or(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::And(_, _, _) => {
+                stmts.push(IrStmt::And(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Equal(_, _, _, _, _) => {
+                stmts.push(IrStmt::Equal(r.near(), r.near(), r.eat(), r.eat(), r.eat()));
+            }
+            IrStmt::NotEqual(_, _, _, _) => {
+                stmts.push(IrStmt::NotEqual(r.near(), r.near(), r.eat(), r.eat()));
+            }
+            IrStmt::Lt(_, _, _) => {
+                stmts.push(IrStmt::Lt(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Let(_, _, _, _, _, _, _) => {
+                stmts.push(IrStmt::Let(r.near(), r.near(), r.eat(), r.eat(), r.eat(), r.eat(), r.eat()));
+            }
+            IrStmt::Gt(_, _, _) => {
+                stmts.push(IrStmt::Gt(r.near(), r.near(), r.eat()));
+            }
+            IrStmt::Get(_, _, _, _, _, _) =>  {
+                stmts.push(IrStmt::Get(r.near(), r.near(), r.eat(), r.eat(), r.eat(), r.eat()));
+            }
             IrStmt::Ldc(n, _reg) => {
                 stmts.push(IrStmt::Ldc(*n, r.eat()));
             },
             IrStmt::Ret(_) => {
                 stmts.push(IrStmt::Ret(r.near()));
             },
-            IrStmt::Assign(_, _, _) => todo!(),
-            IrStmt::Ref(_, _) => todo!(),
-            IrStmt::Beq(_) => todo!(),
-            IrStmt::Jmp => todo!(),
-            IrStmt::Label(_) => todo!(),
+            IrStmt::Assign(s, n, _) => {
+                let near = r.near();
+                let entry = table.entry(s, n);
+                entry.and_modify(|s| {
+                    if s.alloc_phy_reg == false {
+                        let t = r.eat();
+                        s.reg = Some(t.to_string());
+                        s.alloc_phy_reg = true; 
+                    } 
+                });
+                stmts.push(IrStmt::Assign(s.to_vec(), n.to_string(), near));
+            }
+            IrStmt::Beq(_) => {
+                stmts.push(IrStmt::Beq(r.near()));
+            }
+            IrStmt::Ref(s, n) => {
+                // ref put near
+                println!("t-phy-reg:{:?}", table);
+                let reg = table.get(s, n).reg.as_ref().unwrap();
+                r.put_near(reg.clone());
+                stmts.push(IrStmt::Ref(s.to_vec(), n.to_string()));
+            }
+            IrStmt::Jmp | IrStmt::Label(_) => {stmts.push(s.clone());}
         }
     }
    

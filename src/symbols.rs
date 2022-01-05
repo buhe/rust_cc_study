@@ -70,12 +70,17 @@ impl SymTab {
 pub struct Symbol {
     pub name: String,
     pub reg: Option<String>,
+    pub alloc_virtual_reg: bool,
+    pub alloc_phy_reg: bool,
 }
 
 impl Symbol {
     pub fn new(name: String) -> Self {
         Self{
-            name,reg: None
+            name,
+            reg: None,
+            alloc_virtual_reg: false,
+            alloc_phy_reg: false,
         }
     }
 }

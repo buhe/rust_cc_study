@@ -108,18 +108,20 @@ fn block(stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &
         },
         BlockItem::Decl(d) => {
           if let Some(ex) = &d.expr { //when assign
-                 let name = &d.name;
+            let name = &d.name;
             let scope = &d.scope;
+            expr(stmts, ex, table, bl, r);
+            let t2 = r.near();// todo, noy use near api
              // save
             let entry = table.entry(scope, name);
             entry.and_modify(|s| {
-              if s.reg.is_none() {
+              if s.alloc_virtual_reg == false {
                 let t = r.eat();
-                s.reg = Some(t.to_string()) 
+                s.reg = Some(t.to_string());
+                s.alloc_virtual_reg = true; 
               } 
             });
-            expr(stmts, ex, table, bl, r);
-            let t2 = r.near();// todo, noy use near api
+            
             stmts.push(IrStmt::Assign(scope.to_vec(), name.to_string(),t2));
           }
         },
@@ -273,10 +275,9 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       bin_op(stmts, e, table, bl, r);
       bin_op(stmts, e1, table, bl, r);
       let t1 = r.near();
-          let t2 = r.near();
-          let t = r.eat();
-
-          let t3 = r.eat();
+      let t2 = r.near();
+      let t = r.eat();
+      let t3 = r.eat();
       stmts.push(IrStmt::NotEqual(t1, t2, t, t3));
     }
     Expr::Equals(e, e1) => {
@@ -293,19 +294,16 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
     Expr::Assign(env,id, e) => {
       let name = &**id;
       let n = &**env;
-      // save
-      let entry = table.entry(n, name);
-      entry.and_modify(|s| {
-        if s.reg.is_none() {
-          let t = r.eat();
-          s.reg = Some(t.to_string()) 
-        } 
-      });
       bin_op(stmts, e, table, bl, r);
       let t2 = r.near();// todo, noy use near api
- 
-      
-
+        let entry = table.entry(n, name);
+      entry.and_modify(|s| {
+        if s.alloc_virtual_reg == false {
+          let t = r.eat();
+          s.reg = Some(t.to_string());
+          s.alloc_virtual_reg = true; 
+        } 
+      });
       stmts.push(IrStmt::Assign(n.to_vec(), name.to_string(),t2));
     },
     Expr::Null => {},
