@@ -7,6 +7,19 @@ pub struct Prog {
 pub struct Func {
   pub name: String,
   pub stmt: Vec<BlockItem>,
+  pub params: Vec<Param>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Param {
+  pub name: String,
+}
+
+
+#[derive(Debug, Clone)]
+pub struct Call {
+  pub name: String,
+  pub params: Vec<Expr>,
 }
 
 #[derive(Debug, Clone)]

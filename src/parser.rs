@@ -444,8 +444,12 @@ impl Parser {
     }
   }
 
-  fn parameter_list(&mut self) {
-    
+  fn parameter_list(&mut self) -> Vec<Param> {
+    vec![]
+  }
+
+  fn expression_list() -> Vec<Expr> {
+    vec![]
   }
 
   fn compound_statement(&mut self) -> Vec<BlockItem> {
@@ -479,6 +483,7 @@ impl Parser {
         Some(Func {
           name: ident,
           stmt: body,
+          params: self.parameter_list(),
         })
       }
     }

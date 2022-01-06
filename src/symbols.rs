@@ -76,6 +76,7 @@ pub struct Symbol {
     pub reg: Option<String>,
     pub alloc_virtual_reg: bool,
     pub alloc_phy_reg: bool,
+    pub is_func: bool,
 }
 
 impl Symbol {
@@ -85,6 +86,17 @@ impl Symbol {
             reg: None,
             alloc_virtual_reg: false,
             alloc_phy_reg: false,
+            is_func: false,
+        }
+    }
+
+    pub fn new_fn(name: String) -> Self {
+        Self{
+            name,
+            reg: None,
+            alloc_virtual_reg: false,
+            alloc_phy_reg: false,
+            is_func: true,
         }
     }
 }
@@ -137,7 +149,7 @@ mod tests {
     #[test]
     fn test_fn_1() {
         let mut s = SymTab::init();
-        s.put("fn1".to_string(), Symbol::new("fn1".to_string()));
+        s.put("fn1".to_string(), Symbol::new_fn("fn1".to_string()));
         println!("c t {:?}", s.table);
         s.enter_scope();
         s.get_fn(&"fn1".to_string());
