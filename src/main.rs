@@ -134,4 +134,10 @@ mod tests {
         lang_study::run("int main() { int i = 2; while(i == 5) {i = i + 1; continue;} }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn fn_1() {
+        lang_study::run("int func(int x, int y) { return x + y; } int main() { return func(1, 2); }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }
