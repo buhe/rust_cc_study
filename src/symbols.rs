@@ -10,7 +10,7 @@ pub struct SymTab {
 impl SymTab {
     pub fn init() -> Self {
         Self {
-            table: HashMap::new(),
+            table: HashMap::from([(vec![1],HashMap::new())]),
             scope_counter: HashMap::new(),
             scope_level: 1,
             current_scope: vec![1],
@@ -57,12 +57,16 @@ impl SymTab {
         // all scope is not found return false, vec![-1]
     }
 
-    pub fn entry(&mut self, s: &Vec<u32>, name: &String) -> Entry<String, Symbol>{
+    pub fn entry(&mut self, s: &Vec<u32>, name: &String) -> Entry<String, Symbol> {
       self.table.get_mut(s).unwrap().entry(name.to_string())
     }
 
-    pub fn get(&mut self, s: &Vec<u32>, name: &String) -> &Symbol{
+    pub fn get(&mut self, s: &Vec<u32>, name: &String) -> &Symbol {
       self.table.get(s).unwrap().get(name).unwrap()
+    }
+
+    pub fn get_fn(&mut self, name: &String) -> &Symbol {
+        self.table.get(&vec![1]).unwrap().get(name).unwrap()
     }
 }
 
@@ -128,5 +132,19 @@ mod tests {
         s.leave_scope();
         println!("{:?}", s.current_scope);
         println!("{:?}", s.table);
+    }
+
+    #[test]
+    fn test_fn_1() {
+        let mut s = SymTab::init();
+        s.put("fn1".to_string(), Symbol::new("fn1".to_string()));
+        println!("c t {:?}", s.table);
+        s.enter_scope();
+        s.get_fn(&"fn1".to_string());
+        println!("c s {:?}", s.current_scope);
+        println!("c t {:?}", s.table);
+        s.leave_scope();
+        println!("c s {:?}", s.current_scope);
+        println!("c t {:?}", s.table);
     }
 }
