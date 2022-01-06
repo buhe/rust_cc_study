@@ -65,8 +65,8 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
                 });
                 stmts.push(IrStmt::Assign(s.to_vec(), n.to_string(), near));
             }
-            IrStmt::Beq(_) => {
-                stmts.push(IrStmt::Beq(r.near()));
+            IrStmt::Beq(_,l) => {
+                stmts.push(IrStmt::Beq(r.near(),l.to_string()));
             }
             IrStmt::Ref(s, n) => {
                 // ref put near
@@ -75,7 +75,7 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
                 r.put_near(reg.clone());
                 stmts.push(IrStmt::Ref(s.to_vec(), n.to_string()));
             }
-            IrStmt::Jmp | IrStmt::Label(_) => {stmts.push(s.clone());}
+            IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
         }
     }
    

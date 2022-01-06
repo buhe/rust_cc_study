@@ -125,13 +125,13 @@ mod tests {
 
     #[test]
     fn for_1() {
-        lang_study::run("int main() { for (int i = 0; i < 5; i = i + 1) {break;} }".to_string(), 
+        lang_study::run("int main() { int i; for (i = 0; i < 5; i = i + 1) {break;} }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 
     #[test]
     fn while_1() {
-        lang_study::run("int main() { int x = 2; while(i == 5) {i = i + 1; continue;} }".to_string(), 
+        lang_study::run("int main() { int i = 2; while(i == 5) {i = i + 1; continue;} }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 }

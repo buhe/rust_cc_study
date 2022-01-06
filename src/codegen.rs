@@ -1,7 +1,7 @@
 use crate::{ir::*, symbols::{SymTab}};
 use std::io::{Result, Write};
 
-pub fn write_asm(p: &IrProg, bl: &mut BranchLabel ,table: &mut SymTab, w: &mut impl Write) -> Result<()> {
+pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<()> {
   let f = &p.func;
   
   writeln!(w, ".global {}", f.name)?;
@@ -90,13 +90,13 @@ pub fn write_asm(p: &IrProg, bl: &mut BranchLabel ,table: &mut SymTab, w: &mut i
         IrStmt::Ref(_scope,_id) => {
           // use
         },
-        IrStmt::Beq(t) => {
-          let l = bl.label();
-          writeln!(w, "  beq {} ,x0 ,{}", t, l.name)?;
+        IrStmt::Beq(t,l) => {
+          // let l = bl.label();
+          writeln!(w, "  beq {} ,x0 ,{}", t, l)?;
         },
-        IrStmt::Jmp => {
-          let l = bl.label();
-          writeln!(w, "  jal x0, {}", l.name)?;
+        IrStmt::Jmp(l) => {
+          // let l = bl.label();
+          writeln!(w, "  jal x0, {}", l)?;
         },
         IrStmt::Label(label) => {
           writeln!(w, "{}:", label)?;

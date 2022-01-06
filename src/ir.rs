@@ -1,11 +1,13 @@
-use std::collections::VecDeque;
+use std::{collections::{VecDeque, HashMap}};
 
 use crate::{ast::*, symbols::SymTab, regeister::VirtualRegeister};
 
-
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LabelType {
   Other,
-  Else,
+  // Else,
+  Cond,
+  Update,
 }
 pub struct Label {
   pub name: String,
@@ -20,27 +22,47 @@ impl Label {
 
 pub struct BranchLabel {
   counter: u32,
-  queue: VecDeque<Label>,
+  branch_stack: Vec<HashMap<LabelType, VecDeque<Label>>>,
+  // queue: HashMap<LabelType, VecDeque<Label>>,
 }
 
 impl BranchLabel {
   fn init() -> Self {
     Self {
       counter: 0,
-      queue: VecDeque::new(),
+      branch_stack: vec![],
+      // queue: HashMap::new(),
     }
   }
 
-  fn get(&mut self, lt: LabelType) -> String {
+  fn create(&mut self, lt: LabelType) -> String {
     self.counter += 1;
     let name  = format!("L{}",self.counter);
+    let queue = self.branch_stack.get_mut(0).unwrap();
     let n = name.clone();
-    self.queue.push_front(Label::new(name, lt));
+    if queue.contains_key(&lt){}else{
+      queue.insert(lt.clone(), VecDeque::new());
+    }
+    let bq = queue.get_mut(&lt).unwrap();
+    bq.push_front(Label::new(name, lt));
     n
   }
 
-  pub fn label(&mut self) -> Label {
-    self.queue.pop_back().unwrap()
+  pub fn label(&self, lt: LabelType) -> &Label {
+    let queue = self.branch_stack.get(0).unwrap();
+    let q = queue.get(&lt).unwrap();
+    // get last
+    q.get(q.len() - 1).unwrap()
+  }
+
+  pub fn enter_branch(&mut self) {
+    // stack
+    self.branch_stack.push(HashMap::new());
+  }
+
+  pub fn leave_branch(&mut self) {
+    // self.queue.clear();
+    self.branch_stack.pop().unwrap();
   }
 
 }
@@ -78,8 +100,9 @@ pub enum IrStmt {
   Assign(Vec<u32>, String, String),
   // env, id
   Ref(Vec<u32>, String),
-  Beq(String),
-  Jmp,
+  // reg label
+  Beq(String, String),
+  Jmp(String),
   Label(String),
 }
 
@@ -144,26 +167,72 @@ fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabe
       Stmt::If(e, t, l) => {
         // 1. create label
         // 2. add beq ir
-        // 3. when has else, add jmp ir 
+        // 3. when has else, add jmp ir
+        bl.enter_branch();
+        let other_branch = bl.create(LabelType::Other);
         expr(stmts, e, table, bl, r);
         let reg = r.near();
-        stmts.push(IrStmt::Beq(reg));
+        
         stmt(stmts, t, table, bl, r);
         if l.is_some() {
+          let else_branch = bl.create(LabelType::Other); 
+          stmts.push(IrStmt::Beq(reg, bl.label(LabelType::Other).name.clone()));
           let s1 = l.as_ref().unwrap();
-          stmts.push(IrStmt::Jmp);
-          stmts.push(IrStmt::Label(bl.get(LabelType::Else)));
+          stmts.push(IrStmt::Jmp(bl.label(LabelType::Other).name.clone()));//when has else, jump to other
+          stmts.push(IrStmt::Label(else_branch));
           stmt(stmts, s1, table, bl, r)
-        } 
-        stmts.push(IrStmt::Label(bl.get(LabelType::Other)));
+        } else {
+          stmts.push(IrStmt::Beq(reg, bl.label(LabelType::Other).name.clone()));
+        }
+        stmts.push(IrStmt::Label(other_branch));
+        bl.leave_branch();
       },
       Stmt::Block(bts) => {
         block(stmts, bts, table, bl, r)
       },
-    Stmt::For(_, _, _, _) => todo!(),
-    Stmt::While(_, _) => todo!(),
-    Stmt::Continue => todo!(),
-    Stmt::Break => todo!(),
+    Stmt::For(init, cond, update, s) => {
+      bl.enter_branch();
+       let other_branch = bl.create(LabelType::Other); 
+       let cond_branch = bl.create(LabelType::Cond); 
+      if let Some(ex) = init {
+          expr(stmts, ex, table, bl, r);
+        }
+        stmts.push(IrStmt::Label(bl.label(LabelType::Cond).name.clone()));// <--
+        if let Some(ex) = cond {
+          expr(stmts, ex, table, bl, r);
+        }
+        stmts.push(IrStmt::Beq(r.near(), other_branch));//--------------------------
+        stmt(stmts, s, table, bl, r);// body
+        bl.create(LabelType::Update);
+        stmts.push(IrStmt::Label(bl.label(LabelType::Update).name.clone()));
+        if let Some(ex) = update {
+          expr(stmts, ex, table, bl, r);
+        }
+        stmts.push(IrStmt::Jmp(cond_branch));//----------------------------
+        stmts.push(IrStmt::Label(bl.label(LabelType::Other).name.clone()));// <----------
+        bl.leave_branch();
+    },
+    Stmt::While(cond,s) => {
+      bl.enter_branch();
+      let other_branch = bl.create(LabelType::Other); 
+      let cond_branch = bl.create(LabelType::Cond); 
+      bl.create(LabelType::Update); 
+
+      stmts.push(IrStmt::Label(bl.label(LabelType::Cond).name.clone()));
+      stmts.push(IrStmt::Label(bl.label(LabelType::Update).name.clone()));
+      expr(stmts, cond, table, bl, r);
+      stmts.push(IrStmt::Beq(r.near(), other_branch));
+      stmt(stmts, s, table, bl, r);
+      stmts.push(IrStmt::Jmp(cond_branch));
+      stmts.push(IrStmt::Label(bl.label(LabelType::Other).name.clone()));
+      bl.leave_branch();
+    },
+    Stmt::Continue => {
+      stmts.push(IrStmt::Jmp(bl.label(LabelType::Update).name.clone()));
+    },
+    Stmt::Break => {
+      stmts.push(IrStmt::Jmp(bl.label(LabelType::Other).name.clone()));
+    },
   }
 }
 
@@ -313,14 +382,18 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
     Expr::Null => {},
     Expr::Cond(condition, then, other) => {
       // like if-else
+      bl.enter_branch();
+      let else_branch = bl.create(LabelType::Other);
+      let other_branch = bl.create(LabelType::Other);
       expr(stmts, condition, table, bl, r);
       let reg = r.near();
-      stmts.push(IrStmt::Beq(reg));
+      stmts.push(IrStmt::Beq(reg, bl.label(LabelType::Other).name.clone()));
       expr(stmts, then, table, bl, r);
-      stmts.push(IrStmt::Jmp);
-      stmts.push(IrStmt::Label(bl.get(LabelType::Else)));
+      stmts.push(IrStmt::Jmp(bl.label(LabelType::Other).name.clone()));
+      stmts.push(IrStmt::Label(else_branch));
       expr(stmts, other, table, bl, r);
-      stmts.push(IrStmt::Label(bl.get(LabelType::Other)));
+      stmts.push(IrStmt::Label(other_branch));
+      bl.leave_branch();
     },
   }
 }

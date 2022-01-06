@@ -399,7 +399,7 @@ impl Parser {
               update = Some(self.expr());
             }
         }
-        self.expect(TokenType::Semicolon);
+        self.expect(TokenType::RightParen);
         let stmt = self.stmt();
         Stmt::For(init, cond, update, Box::new(stmt))
       }
