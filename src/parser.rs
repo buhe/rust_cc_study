@@ -56,11 +56,16 @@ impl Parser {
       let t2 = &self.tokens[self.pos];
       if let TokenType::Equal = &t2.ty {
           self.pos += 1; // eat =
-          // todo assert
-          let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
-          Expr::Assign(Box::new(scope),Box::new(id.to_string()), Box::new(self.expr()))
+          let t3 = &self.tokens[self.pos];
+          if let TokenType::Equal = &t3.ty {
+            self.pos -= 2; // rollback = and id
+            self.condition()
+          } else {
+            let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
+            Expr::Assign(Box::new(scope),Box::new(id.to_string()), Box::new(self.expr()))
+          }
       } else {
-          self.pos -= 1;
+          self.pos -= 1; // rollback id
           self.condition()
       }
     } else {
