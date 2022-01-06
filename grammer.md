@@ -477,6 +477,42 @@ primary
     | '(' expression ')'
     | Identifier
 ```
+#### 消除左公因式
+```
+unary
+    : postfix
+    | ('-'|'~'|'!') unary
+
+postfix
+    : primary
+    | Identifier '(' expression_list ')'
+
+primary
+    : Integer
+    | '(' expression ')'
+    | Identifier
+```
+```
+unary
+    | ('-'|'~'|'!') unary
+    | Identifier '(' expression_list ')'
+    : Integer
+    | '(' expression ')'
+    | Identifier
+```
+A: ay|ab
+A: aM
+M: y|b
+```
+unary
+    | ('-'|'~'|'!') unary
+    | Identifier rest
+    : Integer
+    | '(' expression ')'
+
+rest
+    '(' expression_list ')' | <
+```
 #### TAC
 ```
 func:

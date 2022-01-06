@@ -295,11 +295,30 @@ impl Parser {
         r
       },
       TokenType::Ident(id) => {
-        // let s = self.symbols.get(&id.to_string());
-        let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
-        Unary::Identifier(Box::new(scope),Box::new(id.clone()))
+        self.rest7(&id.clone())
       }
       _ => self.bad_token(&format!("expected , actual {:?}", t.ty)),
+    }
+  }
+
+  fn rest7(&mut self, id: &String) -> Unary {
+    let t = &self.tokens[self.pos];
+    self.pos += 1;
+    match &t.ty {
+        TokenType::LeftParen => {
+          self.expect(TokenType::LeftParen);
+          let params = self.expression_list();
+          self.expect(TokenType::RightParen);
+          let func = self.symbols.get_fn(id);
+          Unary::Call(Call{
+            name: func.name.clone(),
+            params,
+          })
+        }
+        _ => {
+          let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
+          Unary::Identifier(Box::new(scope),Box::new(id.clone()))
+        }
     }
   }
 
@@ -445,11 +464,52 @@ impl Parser {
   }
 
   fn parameter_list(&mut self) -> Vec<Param> {
-    vec![]
+    let mut params = vec![];
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::RightParen => {}
+      _ => {
+        let _t = self._type();
+        let id = self.identifier();
+        params.push(Param::new(id));
+        loop {
+            let t = &self.tokens[self.pos];
+            match t.ty {
+                TokenType::Comma => {
+                  self.pos += 1; //eat ,
+                  let _t = self._type();
+                  let id = self.identifier();
+                  params.push(Param::new(id));
+                }
+                _ => break,
+            }
+        }
+      }
+    }
+    params
   }
 
-  fn expression_list() -> Vec<Expr> {
-    vec![]
+  fn expression_list(&mut self) -> Vec<Expr> {
+    let mut exprs = vec![];
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::RightParen => {}
+      _ => {
+        let expr = self.expr();
+        exprs.push(expr);
+        loop {
+            let t = &self.tokens[self.pos];
+            match t.ty {
+                TokenType::Comma => {
+                  self.pos += 1; //eat ,
+                  exprs.push(self.expr());
+                }
+                _ => break,
+            }
+        }
+      }
+    }
+    exprs
   }
 
   fn compound_statement(&mut self) -> Vec<BlockItem> {
@@ -478,12 +538,13 @@ impl Parser {
         let ident = self.identifier();
         // self.expect(TokenType::Ident("main".to_string()));
         self.expect(TokenType::LeftParen);
+        let params = self.parameter_list();
         self.expect(TokenType::RightParen);
         let body = self.compound_statement();
         Some(Func {
           name: ident,
           stmt: body,
-          params: self.parameter_list(),
+          params,
         })
       }
     }

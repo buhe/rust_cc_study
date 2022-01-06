@@ -429,5 +429,6 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut Branch
 
           stmts.push(IrStmt::Ref(env.to_vec(), name.to_string()));
         },
+        Unary::Call(_) => todo!(),
     }
 }

@@ -37,6 +37,7 @@ pub enum TokenType {
     Continue,
     Break,
     Eof,
+    Comma,          // ,
 }
 
 // Character Kind

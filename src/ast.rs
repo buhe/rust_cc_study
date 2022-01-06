@@ -15,6 +15,14 @@ pub struct Param {
   pub name: String,
 }
 
+impl Param {
+    pub fn new(name: String) -> Self{
+      Self {
+        name
+      }
+    }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct Call {
@@ -78,4 +86,5 @@ pub enum Unary {
   Neg(Box<Unary>),
   Primary(Box<Expr>),
   Identifier(Box<Vec<u32>>, Box<String>),
+  Call(Call),
 }
