@@ -477,4 +477,20 @@ primary
     | '(' expression ')'
     | Identifier
 ```
+#### TAC
+```
+func:
+    _T2 = ADD _T0, _T1
+    return _T2        # 参数 x 和 y 分别对应 _T0, _T1
+main:
+    _T0 = 1
+    PARAM _T0         # 将 _T0 的值作为参数 x
+    _T1 = 2
+    PARAM _T1         # 将 _T1 的值作为参数 y
+    _T3 = CALL func   # 调用函数
+    return _T3
+```
 
+#### 调用约定
+
+![reg](https://tva1.sinaimg.cn/large/008i3skNgy1gy41ar3j7xj30fl0e3jsf.jpg)

@@ -1,6 +1,6 @@
 #[derive(Debug, Clone)]
 pub struct Prog {
-  pub func: Func,
+  pub funcs: Vec<Func>,
 }
 
 #[derive(Debug, Clone)]

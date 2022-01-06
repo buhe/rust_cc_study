@@ -2,8 +2,10 @@ use crate::{ir::{IrStmt, IrProg, IrFunc}, regeister::Regeister, symbols::SymTab}
 
 pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
     let mut r = Regeister::init();
-    let mut stmts: Vec<IrStmt> = Vec::new();
-    for s in p.func.stmts.iter() {
+    let mut funcs = vec![];
+    for f in &p.funcs {
+        let mut stmts: Vec<IrStmt> = Vec::new();
+        for s in &f.stmts {
          match s {
             IrStmt::Add(_, _, _) => {
                 stmts.push(IrStmt::Add(r.near(), r.near(), r.eat()));
@@ -55,7 +57,7 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             },
             IrStmt::Assign(s, n, _) => {
                 let near = r.near();
-                let entry = table.entry(s, n);
+                let entry = table.entry(&s, &n);
                 entry.and_modify(|s| {
                     if s.alloc_phy_reg == false {
                         let t = r.eat();
@@ -71,16 +73,22 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             IrStmt::Ref(s, n) => {
                 // ref put near
                 println!("t-phy-reg:{:?}", table);
-                let reg = table.get(s, n).reg.as_ref().unwrap();
+                let reg = table.get(&s, &n).reg.as_ref().unwrap();
                 r.put_near(reg.clone());
                 stmts.push(IrStmt::Ref(s.to_vec(), n.to_string()));
             }
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
+            }
         }
+        funcs.push(IrFunc {
+            name: f.name.clone(),
+            stmts
+        });
     }
+    
    
     IrProg {
-        func: IrFunc { name: p.func.name.clone(), stmts }
+        funcs
     }
 }
 

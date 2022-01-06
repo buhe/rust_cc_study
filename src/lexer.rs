@@ -36,6 +36,7 @@ pub enum TokenType {
     While,
     Continue,
     Break,
+    Eof,
 }
 
 // Character Kind
@@ -203,6 +204,7 @@ impl Tokenizer {
                 CharacterType::Unknown(_) => self.bad_position("Unknwon character type."),
             }
         }
+        self.tokens.push(self.new_token(TokenType::Eof));
         self.tokens.clone()
     }
 

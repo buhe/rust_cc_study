@@ -444,6 +444,10 @@ impl Parser {
     }
   }
 
+  fn parameter_list(&mut self) {
+    
+  }
+
   fn compound_statement(&mut self) -> Vec<BlockItem> {
     self.expect(TokenType::LeftBrace);
     self.symbols.enter_scope();
@@ -459,24 +463,39 @@ impl Parser {
     self.symbols.leave_scope();
     block_items
   }
-  fn func(&mut self) -> Func {
-    self._type();
-    // self.expect(TokenType::Int);
-    let ident = self.identifier();
-    // self.expect(TokenType::Ident("main".to_string()));
-    self.expect(TokenType::LeftParen);
-    self.expect(TokenType::RightParen);
-    let body = self.compound_statement();
-    Func {
-      name: ident,
-      stmt: body,
+
+  fn func(&mut self) -> Option<Func> {
+    let t = &self.tokens[self.pos];
+    match t.ty {
+      TokenType::Eof => None,
+      _ => {
+        self._type();
+        // self.expect(TokenType::Int);
+        let ident = self.identifier();
+        // self.expect(TokenType::Ident("main".to_string()));
+        self.expect(TokenType::LeftParen);
+        self.expect(TokenType::RightParen);
+        let body = self.compound_statement();
+        Some(Func {
+          name: ident,
+          stmt: body,
+        })
+      }
     }
   }
 
 
   fn prog(&mut self) {
     // Function
-    self.prog = Some(Prog { func: self.func() });
+    let mut funcs: Vec<Func> = vec![];
+    loop { // branch mutli stmt
+        let func = self.func();
+        match func {
+            Some(s) => funcs.push(s),
+            None => break
+        }
+    }
+    self.prog = Some(Prog { funcs });
     //   self.prog
   }
 }

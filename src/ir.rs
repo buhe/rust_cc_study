@@ -69,7 +69,7 @@ impl BranchLabel {
 
 #[derive(Debug, Clone)]
 pub struct IrProg {
-  pub func: IrFunc,
+  pub funcs: Vec<IrFunc>,
 }
 
 #[derive(Debug, Clone)]
@@ -106,12 +106,17 @@ pub enum IrStmt {
   Label(String),
 }
 
-pub fn ast2ir(p: &Prog, s: &mut SymTab) -> (IrProg, BranchLabel) {
+pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
   let mut bl = BranchLabel::init();
   let mut r = VirtualRegeister::init();
-  (IrProg {
-    func: func(&p.func, s, &mut bl, &mut r),
-  },bl)
+  let mut funcs = vec![];
+  for f in &p.funcs {
+    let func = func(f, s, &mut bl, &mut r);
+    funcs.push(func);
+  }
+  IrProg {
+    funcs
+  }
 }
 
 fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) -> IrFunc {
