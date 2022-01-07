@@ -73,6 +73,7 @@ impl TokenType {
             '|' => Some(Or),
             ':' => Some(Colon),
             '?' => Some(Ques),
+            ',' => Some(Comma),
             _ => None,
         }
     }
@@ -200,7 +201,7 @@ impl Tokenizer {
                         self.tokens.push(t);
                         continue;
                     }
-                    self.bad_position("Unknwon character type.")
+                    panic!("Unknwon character type. {}", c)
                 }
                 CharacterType::Unknown(_) => self.bad_position("Unknwon character type."),
             }

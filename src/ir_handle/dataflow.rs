@@ -78,11 +78,36 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
                 stmts.push(IrStmt::Ref(s.to_vec(), n.to_string()));
             }
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
+            IrStmt::Call(params, l) => {
+                let mut ps = vec![];
+                for _ in params {
+                    ps.push(r.near());
+                }
+                stmts.push(IrStmt::Call(ps, l.to_string()));
             }
+            IrStmt::Param(_,_,_) => unreachable!(),
+            }
+        }
+        for s in &f.params {
+         match s {
+             IrStmt::Param(scope,name,func)=> {
+                // alloc phy reg
+                let entry = table.entry(scope, name);
+                entry.and_modify(|s| {
+                if s.alloc_phy_reg == false {
+                    let t = r.eat();
+                    s.reg = Some(t.to_string());
+                    s.alloc_phy_reg = true; 
+                } 
+                });
+             }
+             _ => unreachable!()
+         }
         }
         funcs.push(IrFunc {
             name: f.name.clone(),
-            stmts
+            stmts,
+            params: f.params.clone(),
         });
     }
     

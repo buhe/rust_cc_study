@@ -500,9 +500,10 @@ unary
     | '(' expression ')'
     | Identifier
 ```
-A: ay|ab
-A: aM
-M: y|b
+- A: ay | ab
+  A: aM
+  M: y | b
+
 ```
 unary
     | ('-'|'~'|'!') unary
@@ -526,7 +527,62 @@ main:
     _T3 = CALL func   # 调用函数
     return _T3
 ```
+#### asm
+```
+    .text
+    .global main
+
+func:
+    # start of prologue
+    addi sp, sp, -56
+    # end of prologue
+
+    # start of body
+    sw a0, 0(sp)
+    sw a1, 4(sp)
+    lw t0, 0(sp)
+    lw t1, 4(sp)
+    add t2, t0, t1
+    mv t0, t2
+    mv a0, t0
+    j func_exit
+    # end of body
+
+func_exit:
+    # start of epilogue
+    addi sp, sp, 56
+    # end of epilogue
+
+    ret
+
+main:
+    # start of prologue
+    addi sp, sp, -56
+    sw ra, 52(sp)
+    # end of prologue
+
+    # start of body
+    li t0, 1
+    li t1, 2
+    mv a0, t0
+    mv a1, t1
+    call func
+    mv t0, a0
+    mv a0, t0
+    j main_exit
+    # end of body
+
+main_exit:
+    # start of epilogue
+    lw ra, 52(sp)
+    addi sp, sp, 56
+    # end of epilogue
+
+    ret
+```
 
 #### 调用约定
 
 ![reg](https://tva1.sinaimg.cn/large/008i3skNgy1gy41ar3j7xj30fl0e3jsf.jpg)
+
+使用 gcc 的约定，为什么要用约定呢？有了约定就知道从 a0,a1 等寄存器加载参数。为了实现简化，第一版 bugu-lang 实现暂定不传超过 8 个参数，也就是不通过内存来传递参数。

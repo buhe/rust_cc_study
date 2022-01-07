@@ -50,7 +50,7 @@ impl SymTab {
             }
             ss.pop();
         }
-        (false, vec![0])
+        panic!("symbol is not exist")
         
         // get all parent scope
         // s.pop

@@ -75,6 +75,7 @@ pub struct IrProg {
 #[derive(Debug, Clone)]
 pub struct IrFunc {
   pub name: String,
+  pub params: Vec<IrStmt>,
   pub stmts: Vec<IrStmt>,
 }
 
@@ -96,7 +97,7 @@ pub enum IrStmt {
   Get(String, String, String, String, String, String),
   Ldc(i32, String),
   Ret(String),
-  // env, id, 2 reg
+  // env, id, reg
   Assign(Vec<u32>, String, String),
   // env, id
   Ref(Vec<u32>, String),
@@ -104,6 +105,10 @@ pub enum IrStmt {
   Beq(String, String),
   Jmp(String),
   Label(String),
+  // scope var name func name
+  Param(Vec<u32>, String, String),
+  // params reg label
+  Call(Vec<String>, String),
 }
 
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
@@ -121,10 +126,31 @@ pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
 
 fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) -> IrFunc {
   let mut stmts = Vec::new();
+  let mut params = Vec::new();
   block(&mut stmts, &f.stmt, table, bl, r);
+  // &f.params -> params
+  arg(&f.name, &mut params, &f.params, table, bl, r);
   IrFunc {
     name: f.name.clone(),
     stmts,
+    params,
+  }
+}
+
+fn arg(func_name: &String, params: &mut Vec<IrStmt>,ps: &Vec<Param>, table: &mut SymTab, _bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+  for s in ps.iter() {
+    let n = &s.name;
+    let scope = &s.scope;
+    // alloc reg
+    let entry = table.entry(scope, n);
+    entry.and_modify(|s| {
+      if s.alloc_virtual_reg == false {
+        let t = r.eat();
+        s.reg = Some(t.to_string());
+        s.alloc_virtual_reg = true; 
+      } 
+    });
+    params.push(IrStmt::Param(scope.to_vec(), n.to_string(), func_name.to_string()))
   }
 }
 
@@ -140,7 +166,7 @@ fn block(stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &
             let scope = &d.scope;
             expr(stmts, ex, table, bl, r);
             let t2 = r.near();// todo, noy use near api
-             // save
+             // alloc reg
             let entry = table.entry(scope, name);
             entry.and_modify(|s| {
               if s.alloc_virtual_reg == false {
@@ -420,15 +446,26 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut Branch
         }
         Unary::Identifier(env, id) => {
           // check decl, table exist
+          // match x + y
           let name = &**id;
           // use var
-          assert!(table.extis(env, name).0);
-          println!("t:{:?}", table);
-          let reg = table.get(env, name).reg.as_ref().unwrap();
+          let var = table.extis(env, name);
+          assert!(var.0);
+          println!("t:{:?} env {:?} var.1 {:?} n {}", table, env, var.1, name);
+          let reg = table.get(&var.1, name).reg.as_ref().unwrap();
           r.put_near(reg.clone());
 
           stmts.push(IrStmt::Ref(env.to_vec(), name.to_string()));
         },
-        Unary::Call(_) => todo!(),
+        Unary::Call(call) => {
+          // match func(1, 2)
+          let mut params = vec![];
+          let label = call.name.clone();
+          for e in &call.params {
+            expr(stmts, e, table, bl, r);
+            params.push(r.near());
+          }
+          stmts.push(IrStmt::Call(params, label));
+        }
     }
 }

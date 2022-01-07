@@ -303,7 +303,6 @@ impl Parser {
 
   fn rest7(&mut self, id: &String) -> Unary {
     let t = &self.tokens[self.pos];
-    self.pos += 1;
     match &t.ty {
         TokenType::LeftParen => {
           self.expect(TokenType::LeftParen);
@@ -471,7 +470,9 @@ impl Parser {
       _ => {
         let _t = self._type();
         let id = self.identifier();
-        params.push(Param::new(id));
+        let param = Param::new(self.symbols.current_scope.clone(),id);
+        //todo scope
+        self.symbols.put(param.name.clone(), Symbol::new(param.name.clone()));
         loop {
             let t = &self.tokens[self.pos];
             match t.ty {
@@ -479,7 +480,9 @@ impl Parser {
                   self.pos += 1; //eat ,
                   let _t = self._type();
                   let id = self.identifier();
-                  params.push(Param::new(id));
+                  let param = Param::new(self.symbols.current_scope.clone(),id);
+                  self.symbols.put(param.name.clone(), Symbol::new(param.name.clone()));
+                  params.push(param);
                 }
                 _ => break,
             }
@@ -536,13 +539,14 @@ impl Parser {
         self._type();
         // self.expect(TokenType::Int);
         let ident = self.identifier();
+        self.symbols.put(ident.clone(), Symbol::new_fn(ident.clone()));
         // self.expect(TokenType::Ident("main".to_string()));
         self.expect(TokenType::LeftParen);
         let params = self.parameter_list();
         self.expect(TokenType::RightParen);
         let body = self.compound_statement();
         Some(Func {
-          name: ident,
+          name: ident.clone(),
           stmt: body,
           params,
         })

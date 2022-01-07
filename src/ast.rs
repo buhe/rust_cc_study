@@ -12,13 +12,17 @@ pub struct Func {
 
 #[derive(Debug, Clone)]
 pub struct Param {
+  pub t: Type,
+  pub scope: Vec<u32>,
   pub name: String,
 }
 
 impl Param {
-    pub fn new(name: String) -> Self{
+    pub fn new(scope: Vec<u32>, name: String) -> Self{
       Self {
-        name
+        name,
+        scope,
+        t: Type::Integer,
       }
     }
 }
