@@ -1,6 +1,6 @@
 use std::{collections::{VecDeque, HashMap}};
 
-use crate::{ast::*, symbols::SymTab, regeister::VirtualRegeister};
+use crate::{ast::*, symbols::SymTab, regeister::{VirtualRegeister, ArgTunnel}};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum LabelType {
@@ -114,9 +114,10 @@ pub enum IrStmt {
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
   let mut bl = BranchLabel::init();
   let mut r = VirtualRegeister::init();
+  let mut tunnel = ArgTunnel::init();
   let mut funcs = vec![];
   for f in &p.funcs {
-    let func = func(f, s, &mut bl, &mut r);
+    let func = func(&mut tunnel, f, s, &mut bl, &mut r);
     funcs.push(func);
   }
   IrProg {
@@ -124,12 +125,14 @@ pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
   }
 }
 
-fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) -> IrFunc {
+fn func(tunnel: &mut ArgTunnel, f: &Func, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) -> IrFunc {
   let mut stmts = Vec::new();
   let mut params = Vec::new();
-  block(&mut stmts, &f.stmt, table, bl, r);
+  // params.push(IrStmt::Label(f.name.clone()));
   // &f.params -> params
-  arg(&f.name, &mut params, &f.params, table, bl, r);
+  arg(tunnel, f.name.clone(), &mut params, &f.params, table, bl, r);
+
+  block(&mut stmts, &f.stmt, table, bl, r);
   IrFunc {
     name: f.name.clone(),
     stmts,
@@ -137,7 +140,7 @@ fn func(f: &Func, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeis
   }
 }
 
-fn arg(func_name: &String, params: &mut Vec<IrStmt>,ps: &Vec<Param>, table: &mut SymTab, _bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+fn arg(tunnel: &mut ArgTunnel,func_name: String, params: &mut Vec<IrStmt>,ps: &Vec<Param>, table: &mut SymTab, _bl: &mut BranchLabel,r: &mut VirtualRegeister) {
   for s in ps.iter() {
     let n = &s.name;
     let scope = &s.scope;
@@ -145,7 +148,7 @@ fn arg(func_name: &String, params: &mut Vec<IrStmt>,ps: &Vec<Param>, table: &mut
     let entry = table.entry(scope, n);
     entry.and_modify(|s| {
       if s.alloc_virtual_reg == false {
-        let t = r.eat();
+        let t = tunnel.set_arg(&func_name);
         s.reg = Some(t.to_string());
         s.alloc_virtual_reg = true; 
       } 

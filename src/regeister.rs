@@ -1,3 +1,5 @@
+use std::collections::{HashMap, VecDeque};
+
 pub struct Regeister {
     stack: Vec<String>,
     near_stack: Vec<String>,
@@ -72,26 +74,34 @@ impl VirtualRegeister {
 }
 
 pub struct ArgTunnel {
-
+    args_stack: HashMap<String, Vec<String>>,
+    args: HashMap<String, VecDeque<String>>,
 }
 
 impl ArgTunnel {
     pub fn init() -> Self {
         Self {
-          
+          args_stack: HashMap::new(),
+          args: HashMap::new(),
         }
     }
       // def func
     pub fn set_arg(&mut self, func_name: &String) -> String {
-        let arg = self.args_stack.pop().unwrap();
-        self.args.push(arg.clone());
+        if !self.args_stack.contains_key(func_name) {
+            self.args_stack.insert(func_name.to_string(), vec![]);
+        }
+        let arg = self.args_stack.get_mut(func_name).unwrap().pop().unwrap();
+             if !self.args.contains_key(func_name) {
+            self.args.insert(func_name.to_string(), VecDeque::new());
+        }
+        self.args.get_mut(func_name).unwrap().push_front(arg.clone());
         arg
     }
 
     // call func
     pub fn get_arg(&mut self, func_name: &String) -> String {
-        let arg = self.args.pop().unwrap();
-        self.args_stack.push(arg.clone());
+        let arg = self.args.get_mut(func_name).unwrap().pop_back().unwrap();
+        self.args_stack.get_mut(func_name).unwrap().push(arg.clone());
         arg
     }
 }

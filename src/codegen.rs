@@ -101,7 +101,8 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "{}:", label)?;
         },
         IrStmt::Param(scope, var_name,label) => {
-
+          let sym = table.get(scope, var_name);
+          let reg = sym.reg.as_ref().unwrap();
         },// args is a0-a7
         IrStmt::Call(reg, label) => {
 
