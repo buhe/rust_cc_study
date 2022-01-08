@@ -113,7 +113,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  save caller reg")?;
           // args
           for pair in regs {
-            writeln!(w, "  addi {} ,{}, 0", pair.0, pair.1)?;
+            writeln!(w, "  addi {} ,{}, 0", pair.1, pair.0)?;
           }
           // call f
           writeln!(w, "  jal x0, {}", label)?;

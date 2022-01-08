@@ -80,7 +80,7 @@ impl ArgTunnel {
           args: HashMap::new(),
         }
     }
-      // def func
+    // def func
     pub fn set_arg(&mut self, func_name: &String) -> String {
         if !self.args_stack.contains_key(func_name) {
             self.args_stack.insert(func_name.to_string(), vec!["a7".to_string(),"a6".to_string(),"a5".to_string(),"a4".to_string(),"a3".to_string(),"a2".to_string(),"a1".to_string(),"a0".to_string()]);

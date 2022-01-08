@@ -455,7 +455,7 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           // use var
           let var = table.extis(env, name);
           assert!(var.0);
-          println!("t:{:?} env {:?} var.1 {:?} n {}", table, env, var.1, name);
+          // println!("t:{:?} env {:?} var.1 {:?} n {}", table, env, var.1, name);
           let reg = table.get(&var.1, name).reg.as_ref().unwrap();
           r.put_near(reg.clone());
 

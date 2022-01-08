@@ -72,13 +72,17 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             }
             IrStmt::Ref(s, n) => {
                 // ref put near
-                println!("t-phy-reg:{:?}", table);
+                // println!("t-phy-reg:{:?}", table);
                 let reg = table.get(&s, &n).reg.as_ref().unwrap();
                 r.put_near(reg.clone());
                 stmts.push(IrStmt::Ref(s.to_vec(), n.to_string()));
             }
             IrStmt::Call(regs,l,_) => {
-                stmts.push(IrStmt::Call(regs.to_vec(), l.to_string(), r.eat()));
+                let mut args = vec![];
+                for reg in regs {
+                    args.push((r.near(),reg.1.to_string()));
+                }
+                stmts.push(IrStmt::Call(args, l.to_string(), r.eat()));
             }
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
             IrStmt::Param(_,_,_) => unreachable!(),

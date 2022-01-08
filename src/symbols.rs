@@ -90,17 +90,6 @@ impl Symbol {
             is_func: false,
         }
     }
-    // const args_stack: HashMap<String, Vec<String>> = HashMap::new();
-    pub fn new_arg(func: String,name: String) -> Self {
-        Self{
-            name,
-            reg: Some("ax".to_string()),// todo a0-a7
-            alloc_virtual_reg: false,
-            alloc_phy_reg: false,
-            is_func: false,
-        }
-    }
-
 
     pub fn new_fn(name: String) -> Self {
         Self{
