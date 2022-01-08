@@ -8,3 +8,6 @@ dump:
 
 readelf:
 	riscv-gcc/bin/riscv64-unknown-elf-readelf -a out
+
+c-a:
+	riscv-gcc/bin/riscv64-unknown-elf-gcc -march=rv32im -mabi=ilp32 -S env/input.c 

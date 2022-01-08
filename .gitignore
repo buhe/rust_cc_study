@@ -5,3 +5,4 @@ out
 .vscode/configurationCache.log
 .vscode/dryrun.log
 .vscode/targets.log
+input.s
