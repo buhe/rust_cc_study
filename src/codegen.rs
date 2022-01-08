@@ -28,6 +28,21 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         }
         IrStmt::Ret(t) => {
           writeln!(w, "  addi a0, {}, 0", t)?; // a0 is return value
+
+          writeln!(w, "  lw s0, 0(sp)")?;
+          writeln!(w, "  lw s1, 4(sp)")?;
+          writeln!(w, "  lw s2, 8(sp)")?;
+          writeln!(w, "  lw s3, 12(sp)")?;
+          writeln!(w, "  lw s4, 16(sp)")?;
+          writeln!(w, "  lw s5, 20(sp)")?;
+          writeln!(w, "  lw s6, 24(sp)")?;
+          writeln!(w, "  lw s7, 28(sp)")?;
+          writeln!(w, "  lw s8, 32(sp)")?;
+          writeln!(w, "  lw s9, 36(sp)")?;
+          writeln!(w, "  lw s10, 40(sp)")?;
+          writeln!(w, "  lw s11, 44(sp)")?;
+          writeln!(w, "  addi sp, sp, 56")?;
+
           writeln!(w, "  jalr x0, x1, 0")?; //x1 is ra: return address
         }
         IrStmt::Add(t1, t2, t) => {
@@ -144,10 +159,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
             writeln!(w, "  addi {} ,{}, 0", pair.1, pair.0)?;
           }
           // call f
-          writeln!(w, "  jal x0, {}", label)?;
-          // return
-          // tx = a0
-          writeln!(w, "  addi {} ,a0, 0", r)?;
+          writeln!(w, "  call {}", label)?;
           
           writeln!(w, "  lw ra, 0(sp)")?;
           writeln!(w, "  lw t0, 4(sp)")?;
@@ -157,7 +169,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  lw t4, 20(sp)")?;
           writeln!(w, "  lw t5, 24(sp)")?;
           writeln!(w, "  lw t6, 28(sp)")?;
-          writeln!(w, "  lw a0, 32(sp)")?;
+          
           writeln!(w, "  lw a1, 36(sp)")?;
           writeln!(w, "  lw a2, 40(sp)")?;
           writeln!(w, "  lw a3, 44(sp)")?;
@@ -166,22 +178,15 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  lw a6, 56(sp)")?;
           writeln!(w, "  lw a7, 60(sp)")?;
           writeln!(w, "  addi sp, sp, 60")?;
+
+          // return
+          // tx = a0
+          writeln!(w, "  addi {} ,a0, 0", r)?;
+
+          writeln!(w, "  lw a0, 32(sp)")?;
         },
       }
     }
-    writeln!(w, "  lw s0, 0(sp)")?;
-    writeln!(w, "  lw s1, 4(sp)")?;
-    writeln!(w, "  lw s2, 8(sp)")?;
-    writeln!(w, "  lw s3, 12(sp)")?;
-    writeln!(w, "  lw s4, 16(sp)")?;
-    writeln!(w, "  lw s5, 20(sp)")?;
-    writeln!(w, "  lw s6, 24(sp)")?;
-    writeln!(w, "  lw s7, 28(sp)")?;
-    writeln!(w, "  lw s8, 32(sp)")?;
-    writeln!(w, "  lw s9, 36(sp)")?;
-    writeln!(w, "  lw s10, 40(sp)")?;
-    writeln!(w, "  lw s11, 44(sp)")?;
-    writeln!(w, "  addi sp, sp, 56")?;
   }
   Ok(())
 }
