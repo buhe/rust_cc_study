@@ -5,7 +5,19 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
   for f in &p.funcs {
     writeln!(w, ".global {}", f.name)?;
     writeln!(w, "{}:", f.name)?;
-    writeln!(w, "  save callee reg")?;
+    writeln!(w, "  addi sp, sp, -56")?;
+    writeln!(w, "  sw s0, 0(sp)")?;
+    writeln!(w, "  sw s1, 4(sp)")?;
+    writeln!(w, "  sw s2, 8(sp)")?;
+    writeln!(w, "  sw s3, 12(sp)")?;
+    writeln!(w, "  sw s4, 16(sp)")?;
+    writeln!(w, "  sw s5, 20(sp)")?;
+    writeln!(w, "  sw s6, 24(sp)")?;
+    writeln!(w, "  sw s7, 28(sp)")?;
+    writeln!(w, "  sw s8, 32(sp)")?;
+    writeln!(w, "  sw s9, 36(sp)")?;
+    writeln!(w, "  sw s10, 40(sp)")?;
+    writeln!(w, "  sw s11, 44(sp)")?;
     for s in &f.stmts {
       match s {
         IrStmt::Neg(t1, t2) => {
@@ -109,8 +121,24 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         IrStmt::Call(regs, label,r) => {
           // mv t a
           // jmp label
-          // out & in f save reg
-          writeln!(w, "  save caller reg")?;
+          
+          writeln!(w, "  addi sp, sp, -60")?;
+          writeln!(w, "  sw ra, 0(sp)")?;
+          writeln!(w, "  sw t0, 4(sp)")?;
+          writeln!(w, "  sw t1, 8(sp)")?;
+          writeln!(w, "  sw t2, 12(sp)")?;
+          writeln!(w, "  sw t3, 16(sp)")?;
+          writeln!(w, "  sw t4, 20(sp)")?;
+          writeln!(w, "  sw t5, 24(sp)")?;
+          writeln!(w, "  sw t6, 28(sp)")?;
+          writeln!(w, "  sw a0, 32(sp)")?;
+          writeln!(w, "  sw a1, 36(sp)")?;
+          writeln!(w, "  sw a2, 40(sp)")?;
+          writeln!(w, "  sw a3, 44(sp)")?;
+          writeln!(w, "  sw a4, 48(sp)")?;
+          writeln!(w, "  sw a5, 52(sp)")?;
+          writeln!(w, "  sw a6, 56(sp)")?;
+          writeln!(w, "  sw a7, 60(sp)")?;
           // args
           for pair in regs {
             writeln!(w, "  addi {} ,{}, 0", pair.1, pair.0)?;
@@ -120,12 +148,40 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           // return
           // tx = a0
           writeln!(w, "  addi {} ,a0, 0", r)?;
-          // out & in f restore
-           writeln!(w, "  restore caller reg")?;
+          
+          writeln!(w, "  lw ra, 0(sp)")?;
+          writeln!(w, "  lw t0, 4(sp)")?;
+          writeln!(w, "  lw t1, 8(sp)")?;
+          writeln!(w, "  lw t2, 12(sp)")?;
+          writeln!(w, "  lw t3, 16(sp)")?;
+          writeln!(w, "  lw t4, 20(sp)")?;
+          writeln!(w, "  lw t5, 24(sp)")?;
+          writeln!(w, "  lw t6, 28(sp)")?;
+          writeln!(w, "  lw a0, 32(sp)")?;
+          writeln!(w, "  lw a1, 36(sp)")?;
+          writeln!(w, "  lw a2, 40(sp)")?;
+          writeln!(w, "  lw a3, 44(sp)")?;
+          writeln!(w, "  lw a4, 48(sp)")?;
+          writeln!(w, "  lw a5, 52(sp)")?;
+          writeln!(w, "  lw a6, 56(sp)")?;
+          writeln!(w, "  lw a7, 60(sp)")?;
+          writeln!(w, "  addi sp, sp, 60")?;
         },
       }
     }
-     writeln!(w, "  restore callee reg")?;
+    writeln!(w, "  lw s0, 0(sp)")?;
+    writeln!(w, "  lw s1, 4(sp)")?;
+    writeln!(w, "  lw s2, 8(sp)")?;
+    writeln!(w, "  lw s3, 12(sp)")?;
+    writeln!(w, "  lw s4, 16(sp)")?;
+    writeln!(w, "  lw s5, 20(sp)")?;
+    writeln!(w, "  lw s6, 24(sp)")?;
+    writeln!(w, "  lw s7, 28(sp)")?;
+    writeln!(w, "  lw s8, 32(sp)")?;
+    writeln!(w, "  lw s9, 36(sp)")?;
+    writeln!(w, "  lw s10, 40(sp)")?;
+    writeln!(w, "  lw s11, 44(sp)")?;
+    writeln!(w, "  addi sp, sp, 56")?;
   }
   Ok(())
 }

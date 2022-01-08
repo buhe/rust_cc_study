@@ -590,3 +590,53 @@ main_exit:
 
 
 外层函数的寄存器保存在外层函数栈里。
+
+- s0 寄存器指向栈尾。可不指定。gcc 默认指定了。
+
+- sp 虽然是 callee 保存，但 addi	sp,sp,-32 和 addi	sp,sp,32 隐含保存和恢复 sp
+
+```asm
+	.file	"input.c"
+	.option nopic
+	.attribute arch, "rv32i2p0_m2p0"
+	.attribute unaligned_access, 0
+	.attribute stack_align, 16
+	.text
+	.align	2
+	.globl	func
+	.type	func, @function
+func:
+	addi	sp,sp,-32
+	sw	s0,28(sp)
+	addi	s0,sp,32
+	sw	a0,-20(s0)
+	sw	a1,-24(s0)
+	lw	a4,-20(s0)
+	lw	a5,-24(s0)
+	add	a5,a4,a5
+	mv	a0,a5
+	lw	s0,28(sp)
+	addi	sp,sp,32
+	jr	ra
+	.size	func, .-func
+	.align	2
+	.globl	main
+	.type	main, @function
+main:
+	addi	sp,sp,-16
+	sw	ra,12(sp)
+	sw	s0,8(sp)
+	addi	s0,sp,16
+	li	a1,2
+	li	a0,1
+	call	func
+	mv	a5,a0
+	mv	a0,a5
+	lw	ra,12(sp)
+	lw	s0,8(sp)
+	addi	sp,sp,16
+	jr	ra
+	.size	main, .-main
+	.ident	"GCC: (SiFive GCC 8.3.0-2020.04.0) 8.3.0"
+```
+
