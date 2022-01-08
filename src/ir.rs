@@ -469,6 +469,7 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
             expr(tunnel, stmts, e, table, bl, r);
             params.push((r.near(), tunnel.get_arg(label)));
           }
+          assert!(tunnel.is_match(label));
           stmts.push(IrStmt::Call(params, label.to_string(), r.eat()));
         }
     }

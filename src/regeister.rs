@@ -99,4 +99,8 @@ impl ArgTunnel {
         // self.args_stack.get_mut(func_name).unwrap().push(arg.clone());
         arg
     }
+
+    pub fn is_match(&mut self, func_name: &String) -> bool {
+        self.args.get(func_name).unwrap().is_empty()
+    }
 }
