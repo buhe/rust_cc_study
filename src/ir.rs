@@ -107,8 +107,8 @@ pub enum IrStmt {
   Label(String),
   // scope var name func name
   Param(Vec<u32>, String, String),
-  // params reg label
-  Call(Vec<String>, String),
+  // params (tmp reg, arg reg) label return reg
+  Call(Vec<(String, String)>, String, String),
 }
 
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
@@ -130,9 +130,9 @@ fn func(tunnel: &mut ArgTunnel, f: &Func, table: &mut SymTab, bl: &mut BranchLab
   let mut params = Vec::new();
   // params.push(IrStmt::Label(f.name.clone()));
   // &f.params -> params
-  arg(tunnel, f.name.clone(), &mut params, &f.params, table, bl, r);
+  arg(tunnel, f.name.clone(), &mut params, &f.params, table, bl);
 
-  block(&mut stmts, &f.stmt, table, bl, r);
+  block(tunnel, &mut stmts, &f.stmt, table, bl, r);
   IrFunc {
     name: f.name.clone(),
     stmts,
@@ -140,34 +140,35 @@ fn func(tunnel: &mut ArgTunnel, f: &Func, table: &mut SymTab, bl: &mut BranchLab
   }
 }
 
-fn arg(tunnel: &mut ArgTunnel,func_name: String, params: &mut Vec<IrStmt>,ps: &Vec<Param>, table: &mut SymTab, _bl: &mut BranchLabel,r: &mut VirtualRegeister) {
-  for s in ps.iter() {
+fn arg(tunnel: &mut ArgTunnel,func_name: String, params: &mut Vec<IrStmt>,ps: &Vec<Param>, table: &mut SymTab, _bl: &mut BranchLabel) {
+  for s in ps {
     let n = &s.name;
     let scope = &s.scope;
     // alloc reg
     let entry = table.entry(scope, n);
     entry.and_modify(|s| {
-      if s.alloc_virtual_reg == false {
+      if s.alloc_phy_reg == false {
         let t = tunnel.set_arg(&func_name);
         s.reg = Some(t.to_string());
-        s.alloc_virtual_reg = true; 
+        s.alloc_virtual_reg = true;
+        s.alloc_phy_reg = true; 
       } 
     });
     params.push(IrStmt::Param(scope.to_vec(), n.to_string(), func_name.to_string()))
   }
 }
 
-fn block(stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+fn block(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
   for s in bts.iter() {
     match s {
         BlockItem::Stmt(s) => {
-          stmt(stmts,s,table, bl, r);
+          stmt(tunnel, stmts,s,table, bl, r);
         },
         BlockItem::Decl(d) => {
           if let Some(ex) = &d.expr { //when assign
             let name = &d.name;
             let scope = &d.scope;
-            expr(stmts, ex, table, bl, r);
+            expr(tunnel, stmts, ex, table, bl, r);
             let t2 = r.near();// todo, noy use near api
              // alloc reg
             let entry = table.entry(scope, name);
@@ -186,16 +187,16 @@ fn block(stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, table: &mut SymTab, bl: &
   }
 }
 
-fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+fn stmt(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabel,r: &mut VirtualRegeister) {
   match s {
       Stmt::Ret(e) => {
-        expr(stmts, e, table, bl, r);
+        expr(tunnel, stmts, e, table, bl, r);
         let t = r.near();
         stmts.push(IrStmt::Ret(t));
       }
       Stmt::Expr(e) => {
         if let Some(ex) = e {
-          expr(stmts, ex, table, bl, r);
+          expr(tunnel, stmts, ex, table, bl, r);
         }
       },
       Stmt::If(e, t, l) => {
@@ -204,17 +205,17 @@ fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabe
         // 3. when has else, add jmp ir
         bl.enter_branch();
         let other_branch = bl.create(LabelType::Other);
-        expr(stmts, e, table, bl, r);
+        expr(tunnel, stmts, e, table, bl, r);
         let reg = r.near();
         
-        stmt(stmts, t, table, bl, r);
+        stmt(tunnel, stmts, t, table, bl, r);
         if l.is_some() {
           let else_branch = bl.create(LabelType::Other); 
           stmts.push(IrStmt::Beq(reg, bl.label(LabelType::Other).name.clone()));
           let s1 = l.as_ref().unwrap();
           stmts.push(IrStmt::Jmp(bl.label(LabelType::Other).name.clone()));//when has else, jump to other
           stmts.push(IrStmt::Label(else_branch));
-          stmt(stmts, s1, table, bl, r)
+          stmt(tunnel, stmts, s1, table, bl, r)
         } else {
           stmts.push(IrStmt::Beq(reg, bl.label(LabelType::Other).name.clone()));
         }
@@ -222,25 +223,25 @@ fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabe
         bl.leave_branch();
       },
       Stmt::Block(bts) => {
-        block(stmts, bts, table, bl, r)
+        block(tunnel, stmts, bts, table, bl, r)
       },
     Stmt::For(init, cond, update, s) => {
       bl.enter_branch();
        let other_branch = bl.create(LabelType::Other); 
        let cond_branch = bl.create(LabelType::Cond); 
       if let Some(ex) = init {
-          expr(stmts, ex, table, bl, r);
+          expr(tunnel, stmts, ex, table, bl, r);
         }
         stmts.push(IrStmt::Label(bl.label(LabelType::Cond).name.clone()));// <--
         if let Some(ex) = cond {
-          expr(stmts, ex, table, bl, r);
+          expr(tunnel, stmts, ex, table, bl, r);
         }
         stmts.push(IrStmt::Beq(r.near(), other_branch));//--------------------------
-        stmt(stmts, s, table, bl, r);// body
+        stmt(tunnel, stmts, s, table, bl, r);// body
         bl.create(LabelType::Update);
         stmts.push(IrStmt::Label(bl.label(LabelType::Update).name.clone()));
         if let Some(ex) = update {
-          expr(stmts, ex, table, bl, r);
+          expr(tunnel, stmts, ex, table, bl, r);
         }
         stmts.push(IrStmt::Jmp(cond_branch));//----------------------------
         stmts.push(IrStmt::Label(bl.label(LabelType::Other).name.clone()));// <----------
@@ -254,9 +255,9 @@ fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabe
 
       stmts.push(IrStmt::Label(bl.label(LabelType::Cond).name.clone()));
       stmts.push(IrStmt::Label(bl.label(LabelType::Update).name.clone()));
-      expr(stmts, cond, table, bl, r);
+      expr(tunnel, stmts, cond, table, bl, r);
       stmts.push(IrStmt::Beq(r.near(), other_branch));
-      stmt(stmts, s, table, bl, r);
+      stmt(tunnel, stmts, s, table, bl, r);
       stmts.push(IrStmt::Jmp(cond_branch));
       stmts.push(IrStmt::Label(bl.label(LabelType::Other).name.clone()));
       bl.leave_branch();
@@ -270,72 +271,72 @@ fn stmt(stmts: &mut Vec<IrStmt>,s: &Stmt, table: &mut SymTab,bl: &mut BranchLabe
   }
 }
 
-fn expr(stmts: &mut Vec<IrStmt>, e: &Expr, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
-  bin_op(stmts, e, table, bl, r)
+fn expr(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, e: &Expr, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+  bin_op(tunnel, stmts, e, table, bl, r)
 }
 
-fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+fn bin_op(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
   match m {
     Expr::Mul(u, m1) => {
-      bin_op(stmts, u, table, bl, r);
-      bin_op(stmts, m1, table, bl, r);
+      bin_op(tunnel, stmts, u, table, bl, r);
+      bin_op(tunnel, stmts, m1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Mul(t1, t2, t));
     },
     Expr::Div(u, m1) => {
-      bin_op(stmts, u, table, bl, r);
-      bin_op(stmts, m1, table, bl, r);
+      bin_op(tunnel, stmts, u, table, bl, r);
+      bin_op(tunnel, stmts, m1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Div(t1, t2, t));
     },
     Expr::Mod(u, m1) => {
-      bin_op(stmts, u, table, bl, r);
-      bin_op(stmts, m1, table, bl, r);
+      bin_op(tunnel, stmts, u, table, bl, r);
+      bin_op(tunnel, stmts, m1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Mod(t1, t2, t));
     },
     Expr::Add(m,a1) => {
-      bin_op(stmts, m, table, bl, r);
-      bin_op(stmts, a1, table, bl, r);
+      bin_op(tunnel, stmts, m, table, bl, r);
+      bin_op(tunnel, stmts, a1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Add(t1, t2, t));
     },
     Expr::Sub(m,a1)=> {
-      bin_op(stmts, m, table, bl, r);
-      bin_op(stmts, a1, table, bl, r);
+      bin_op(tunnel, stmts, m, table, bl, r);
+      bin_op(tunnel, stmts, a1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Sub(t1, t2, t));
     },
-    Expr::Unary(u) => unary(stmts, u, table, bl, r),
+    Expr::Unary(u) => unary(tunnel, stmts, u, table, bl, r),
     Expr::Lt(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Lt(t1, t2, t));
     }
     Expr::Gt(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
       stmts.push(IrStmt::Gt(t1, t2, t));
     }
     Expr::Let(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
@@ -349,8 +350,8 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       stmts.push(IrStmt::Let(t1, t2, t, t3, t4, t5, t6));
     }
     Expr::Get(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
@@ -363,24 +364,24 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       stmts.push(IrStmt::Get(t1, t2, t, t3, t4, t5));
     }
     Expr::And(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near(); // s2
       let t2 = r.near(); // s1
       let t = r.eat(); // d
       stmts.push(IrStmt::And(t1, t2, t));
     }
     Expr::Or(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
           let t1 = r.near();
           let t2 = r.near();
           let t = r.eat();
       stmts.push(IrStmt::Or(t1, t2, t));
     }
     Expr::NotEquals(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
@@ -388,8 +389,8 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       stmts.push(IrStmt::NotEqual(t1, t2, t, t3));
     }
     Expr::Equals(e, e1) => {
-      bin_op(stmts, e, table, bl, r);
-      bin_op(stmts, e1, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e1, table, bl, r);
       let t1 = r.near();
       let t2 = r.near();
       let t = r.eat();
@@ -401,7 +402,7 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
     Expr::Assign(env,id, e) => {
       let name = &**id;
       let n = &**env;
-      bin_op(stmts, e, table, bl, r);
+      bin_op(tunnel, stmts, e, table, bl, r);
       let t2 = r.near();// todo, noy use near api
         let entry = table.entry(n, name);
       entry.and_modify(|s| {
@@ -419,33 +420,33 @@ fn bin_op(stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut SymTab, bl: &mut BranchL
       bl.enter_branch();
       let else_branch = bl.create(LabelType::Other);
       let other_branch = bl.create(LabelType::Other);
-      expr(stmts, condition, table, bl, r);
+      expr(tunnel, stmts, condition, table, bl, r);
       let reg = r.near();
       stmts.push(IrStmt::Beq(reg, bl.label(LabelType::Other).name.clone()));
-      expr(stmts, then, table, bl, r);
+      expr(tunnel, stmts, then, table, bl, r);
       stmts.push(IrStmt::Jmp(bl.label(LabelType::Other).name.clone()));
       stmts.push(IrStmt::Label(else_branch));
-      expr(stmts, other, table, bl, r);
+      expr(tunnel, stmts, other, table, bl, r);
       stmts.push(IrStmt::Label(other_branch));
       bl.leave_branch();
     },
   }
 }
 
-fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
+fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut BranchLabel,r: &mut VirtualRegeister) {
   match u {
         Unary::Int(y) => {
           let t = r.eat();
           stmts.push(IrStmt::Ldc(*y, t))
         },
         Unary::Neg(y) => { 
-          unary(stmts, &*y, table, bl, r);
+          unary(tunnel, stmts, &*y, table, bl, r);
           let t1 = r.near();
           let t2 = r.eat();
           stmts.push(IrStmt::Neg(t1, t2));
         },
         Unary::Primary(y) => {
-          expr(stmts, &*y, table, bl, r)
+          expr(tunnel, stmts, &*y, table, bl, r)
         }
         Unary::Identifier(env, id) => {
           // check decl, table exist
@@ -463,12 +464,12 @@ fn unary(stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut SymTab, bl: &mut Branch
         Unary::Call(call) => {
           // match func(1, 2)
           let mut params = vec![];
-          let label = call.name.clone();
+          let label = &call.name;
           for e in &call.params {
-            expr(stmts, e, table, bl, r);
-            params.push(r.near());
+            expr(tunnel, stmts, e, table, bl, r);
+            params.push((r.near(), tunnel.get_arg(label)));
           }
-          stmts.push(IrStmt::Call(params, label));
+          stmts.push(IrStmt::Call(params, label.to_string(), r.eat()));
         }
     }
 }

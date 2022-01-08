@@ -6,7 +6,6 @@ pub mod codegen;
 pub mod regeister;
 pub mod symbols;
 pub mod ir_handle;
-pub mod env;
 
 use lexer::tokenize;
 use parser::parsing;

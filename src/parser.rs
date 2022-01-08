@@ -462,7 +462,7 @@ impl Parser {
     }
   }
 
-  fn parameter_list(&mut self) -> Vec<Param> {
+  fn parameter_list(&mut self,func_name: String) -> Vec<Param> {
     let mut params = vec![];
     let t = &self.tokens[self.pos];
     match t.ty {
@@ -471,8 +471,10 @@ impl Parser {
         let _t = self._type();
         let id = self.identifier();
         let param = Param::new(self.symbols.current_scope.clone(),id);
+        self.symbols.put(param.name.clone(), Symbol::new_arg(func_name.clone(),param.name.clone()));
+        params.push(param);
         //todo scope
-        self.symbols.put(param.name.clone(), Symbol::new(param.name.clone()));
+        
         loop {
             let t = &self.tokens[self.pos];
             match t.ty {
@@ -481,7 +483,7 @@ impl Parser {
                   let _t = self._type();
                   let id = self.identifier();
                   let param = Param::new(self.symbols.current_scope.clone(),id);
-                  self.symbols.put(param.name.clone(), Symbol::new(param.name.clone()));
+                  self.symbols.put(param.name.clone(), Symbol::new_arg(func_name.clone(),param.name.clone()));
                   params.push(param);
                 }
                 _ => break,
@@ -542,7 +544,7 @@ impl Parser {
         self.symbols.put(ident.clone(), Symbol::new_fn(ident.clone()));
         // self.expect(TokenType::Ident("main".to_string()));
         self.expect(TokenType::LeftParen);
-        let params = self.parameter_list();
+        let params = self.parameter_list(ident.clone());
         self.expect(TokenType::RightParen);
         let body = self.compound_statement();
         Some(Func {

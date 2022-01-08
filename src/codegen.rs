@@ -5,6 +5,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
   for f in &p.funcs {
     writeln!(w, ".global {}", f.name)?;
     writeln!(w, "{}:", f.name)?;
+    writeln!(w, "  save callee reg")?;
     for s in &f.stmts {
       match s {
         IrStmt::Neg(t1, t2) => {
@@ -100,15 +101,31 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         IrStmt::Label(label) => {
           writeln!(w, "{}:", label)?;
         },
-        IrStmt::Param(scope, var_name,label) => {
-          let sym = table.get(scope, var_name);
-          let reg = sym.reg.as_ref().unwrap();
+        IrStmt::Param(_, _, _) => {
+          // let sym = table.get(scope, var_name);
+          // like a0
+          // let reg = sym.reg.as_ref().unwrap();
         },// args is a0-a7
-        IrStmt::Call(reg, label) => {
-
+        IrStmt::Call(regs, label,r) => {
+          // mv t a
+          // jmp label
+          // out & in f save reg
+          writeln!(w, "  save caller reg")?;
+          // args
+          for pair in regs {
+            writeln!(w, "  addi {} ,{}, 0", pair.0, pair.1)?;
+          }
+          // call f
+          writeln!(w, "  jal x0, {}", label)?;
+          // return
+          // tx = a0
+          writeln!(w, "  addi {} ,a0, 0", r)?;
+          // out & in f restore
+           writeln!(w, "  restore caller reg")?;
         },
       }
     }
+     writeln!(w, "  restore callee reg")?;
   }
   Ok(())
 }

@@ -586,3 +586,7 @@ main_exit:
 ![reg](https://tva1.sinaimg.cn/large/008i3skNgy1gy41ar3j7xj30fl0e3jsf.jpg)
 
 使用 gcc 的约定，为什么要用约定呢？有了约定就知道从 a0,a1 等寄存器加载参数。为了实现简化，第一版 bugu-lang 实现暂定不传超过 8 个参数，也就是不通过内存来传递参数。
+
+
+
+外层函数的寄存器保存在外层函数栈里。
