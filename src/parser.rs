@@ -295,31 +295,30 @@ impl Parser {
         r
       },
       TokenType::Ident(id) => {
-        self.rest7(&id.clone())
+        let t = &self.tokens[self.pos];
+        let name = id.clone();
+        match &t.ty {
+            TokenType::LeftParen => {
+              self.expect(TokenType::LeftParen);
+              let params = self.expression_list();
+              self.expect(TokenType::RightParen);
+              let func = self.symbols.get_fn(&name);
+              Unary::Call(Call{
+                name: func.name.clone(),
+                params,
+              })
+            }
+            _ => {
+              let scope = self.symbols.extis(&self.symbols.current_scope, &id).1;
+              Unary::Identifier(Box::new(scope),Box::new(id.clone()))
+            }
+        }
       }
       _ => self.bad_token(&format!("expected , actual {:?}", t.ty)),
     }
   }
 
-  fn rest7(&mut self, id: &String) -> Unary {
-    let t = &self.tokens[self.pos];
-    match &t.ty {
-        TokenType::LeftParen => {
-          self.expect(TokenType::LeftParen);
-          let params = self.expression_list();
-          self.expect(TokenType::RightParen);
-          let func = self.symbols.get_fn(id);
-          Unary::Call(Call{
-            name: func.name.clone(),
-            params,
-          })
-        }
-        _ => {
-          let scope = self.symbols.extis(&self.symbols.current_scope, id).1;
-          Unary::Identifier(Box::new(scope),Box::new(id.clone()))
-        }
-    }
-  }
+
 
   fn _type(&mut self) -> Type{
       self.expect(TokenType::Int);
