@@ -3,6 +3,7 @@ use crate::{ir::{IrStmt, IrProg, IrFunc}, regeister::Regeister, symbols::SymTab}
 pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
     let mut r = Regeister::init();
     let mut funcs = vec![];
+    let mut global_vars = vec![];
     for f in &p.funcs {
         let mut stmts: Vec<IrStmt> = Vec::new();
         for s in &f.stmts {
@@ -84,8 +85,10 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
                 }
                 stmts.push(IrStmt::Call(args, l.to_string(), r.eat()));
             }
+            IrStmt::Load(_, _, n) => global_vars.push(IrStmt::Load(r.eat(), r.near(), *n)),
+            IrStmt::LoadSymbol(_, v) => global_vars.push(IrStmt::LoadSymbol(r.eat(), v.clone())),
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
-            IrStmt::Param(_,_,_) => unreachable!(),
+            IrStmt::Param(_,_,_) | IrStmt::DeclGlobal(_,_)=> unreachable!(),
             }
         }
         for s in &f.params {
@@ -103,7 +106,7 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
     
    
     IrProg {
-        funcs
+        funcs, global_vars: p.global_vars.to_owned()
     }
 }
 

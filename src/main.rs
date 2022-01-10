@@ -140,4 +140,10 @@ mod tests {
         lang_study::run("int func(int x, int y) { return x + y; } int main() { return func(1, 2); }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn g_1() {
+        lang_study::run("int x = 2021; int main() { return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

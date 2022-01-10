@@ -640,3 +640,38 @@ main:
 	.ident	"GCC: (SiFive GCC 8.3.0-2020.04.0) 8.3.0"
 ```
 
+### step10
+```
+program
+    : (function | declaration)*
+```
+
+```
+function
+    : type Identifier '(' parameter_list ')' compound_statement
+
+declaration
+    : type Identifier ('=' expression)? ';'
+```
+- A: ay | ab
+  A: aM
+  M: y | b
+
+```
+program
+    : (type Identifier rest)*
+
+rest
+    : '(' parameter_list ')'
+    | ('=' expression)? ';'
+```
+
+```
+program
+    : type Identifier rest
+    | <
+
+rest
+    : '(' parameter_list ')'
+    | ('=' expression)? ';'
+```

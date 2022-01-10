@@ -70,6 +70,7 @@ impl BranchLabel {
 #[derive(Debug, Clone)]
 pub struct IrProg {
   pub funcs: Vec<IrFunc>,
+  pub global_vars: Vec<IrStmt>,
 }
 
 #[derive(Debug, Clone)]
@@ -109,6 +110,12 @@ pub enum IrStmt {
   Param(Vec<u32>, String, String),
   // params (tmp reg, arg reg) label return reg
   Call(Vec<(String, String)>, String, String),
+  // reg, base reg, num
+  Load(String, String, u32),
+  // reg, global var name
+  LoadSymbol(String, String),
+  // var name val
+  DeclGlobal(String, i32),
 }
 
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
@@ -116,12 +123,29 @@ pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
   let mut r = VirtualRegeister::init();
   let mut tunnel = ArgTunnel::init();
   let mut funcs = vec![];
+  let mut global_vars = vec![];
   for f in &p.funcs {
     let func = func(&mut tunnel, f, s, &mut bl, &mut r);
     funcs.push(func);
   }
+  for g in &p.global_vars {
+    if g.expr.is_some() {
+      let var_name = g.name.clone();
+      let val: i32;
+      let e = g.expr.as_ref().unwrap();
+      match e {
+          Expr::Unary(Unary::Int(i)) => {
+            val = *i;
+          }
+          _ => panic!("initializer element is not constant")
+      }
+      global_vars.push(IrStmt::DeclGlobal(var_name, val));
+    } else {
+      panic!("global var is not inited");
+    }
+  }
   IrProg {
-    funcs
+    funcs, global_vars
   }
 }
 
@@ -453,11 +477,20 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           // use var
           let var = table.extis(env, name);
           assert!(var.0);
-          // println!("t:{:?} env {:?} var.1 {:?} n {}", table, env, var.1, name);
-          let reg = table.get(&var.1, name).reg.as_ref().unwrap();
-          r.put_near(reg.clone());
+          if var.1 == vec![1] {
+            let reg = r.eat();
+            // global var
+            stmts.push(IrStmt::LoadSymbol(r.eat(), name.clone()));
+            stmts.push(IrStmt::Load(reg.clone(), r.near(), 0));
+            r.put_near(reg.clone());
+          } else {
+            let reg = table.get(&var.1, name).reg.as_ref().unwrap();
+            r.put_near(reg.clone());
 
-          stmts.push(IrStmt::Ref(env.to_vec(), name.to_string()));
+            stmts.push(IrStmt::Ref(env.to_vec(), name.to_string()));
+          }
+          // println!("t:{:?} env {:?} var.1 {:?} n {}", table, env, var.1, name);
+          
         },
         Unary::Call(call) => {
           // match func(1, 2)

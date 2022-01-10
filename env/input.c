@@ -1,2 +1,5 @@
-int func(int x, int y) { return x + y; } 
-int main() { return func(1, 2); }
+int y = 4;
+int x = y + 2;
+int main() {
+    return x;
+}

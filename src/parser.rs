@@ -533,11 +533,7 @@ impl Parser {
     block_items
   }
 
-  fn func(&mut self) -> Option<Func> {
-    let t = &self.tokens[self.pos];
-    match t.ty {
-      TokenType::Eof => None,
-      _ => {
+  fn func(&mut self) -> Func {
         self._type();
         // self.expect(TokenType::Int);
         let ident = self.identifier();
@@ -547,27 +543,40 @@ impl Parser {
         let params = self.parameter_list();
         self.expect(TokenType::RightParen);
         let body = self.compound_statement();
-        Some(Func {
+        Func {
           name: ident.clone(),
           stmt: body,
           params,
-        })
-      }
+        }
     }
-  }
+  
 
 
   fn prog(&mut self) {
-    // Function
     let mut funcs: Vec<Func> = vec![];
-    loop { // branch mutli stmt
-        let func = self.func();
-        match func {
-            Some(s) => funcs.push(s),
-            None => break
-        }
+    let mut global_vars: Vec<Decl> = vec![];
+    loop {
+          let t = &self.tokens[self.pos];
+          match t.ty {
+            TokenType::Eof => break,
+            TokenType::Int => { //type
+              self._type(); // eat type
+              self.pos += 1; // eat id
+              let t = &self.tokens[self.pos];
+              match t.ty {
+                TokenType::LeftParen => {
+                  self.pos -= 2;
+                  funcs.push(self.func());
+                }
+                _ => {
+                  self.pos -= 2;
+                  global_vars.push(self.decl());
+                }
+              }
+            }
+            _ => self.bad_token("no func or gvar")
+          }
     }
-    self.prog = Some(Prog { funcs });
-    //   self.prog
+    self.prog = Some(Prog { funcs, global_vars });
   }
 }
