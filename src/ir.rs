@@ -89,10 +89,10 @@ pub enum IrStmt {
   Neg(String, String),
   Or(String, String, String),
   And(String, String, String),
-  Equal(String, String, String, String, String),
+  Equal(String, String, String, String),
   NotEqual(String, String, String, String),
   Lt(String, String, String),
-  Let(String, String, String, String, String, String, String),
+  Let(String, String, String, String, String, String),
   Gt(String, String, String),
   Get(String, String, String, String, String, String),
   Ldc(i32, String),
@@ -342,12 +342,11 @@ fn bin_op(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut S
       let t = r.eat();
 
       let t3 = r.eat();
-      let t6 = r.eat();
 
       let t4 = r.eat();
 
       let t5 = r.eat();
-      stmts.push(IrStmt::Let(t1, t2, t, t3, t4, t5, t6));
+      stmts.push(IrStmt::Let(t1, t2, t, t3, t4, t5));
     }
     Expr::Get(e, e1) => {
       bin_op(tunnel, stmts, e, table, bl, r);
@@ -396,8 +395,7 @@ fn bin_op(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,m: &Expr, table: &mut S
       let t = r.eat();
 
       let t3 = r.eat();
-      let t4 = r.eat();
-      stmts.push(IrStmt::Equal(t1, t2, t, t3, t4));
+      stmts.push(IrStmt::Equal(t1, t2, t, t3));
     }
     Expr::Assign(env,id, e) => {
       let name = &**id;

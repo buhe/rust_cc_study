@@ -31,8 +31,8 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             IrStmt::And(_, _, _) => {
                 stmts.push(IrStmt::And(r.near(), r.near(), r.eat()));
             }
-            IrStmt::Equal(_, _, _, _, _) => {
-                stmts.push(IrStmt::Equal(r.near(), r.near(), r.eat(), r.eat(), r.eat()));
+            IrStmt::Equal(_, _, _, _) => {
+                stmts.push(IrStmt::Equal(r.near(), r.near(), r.eat(), r.eat()));
             }
             IrStmt::NotEqual(_, _, _, _) => {
                 stmts.push(IrStmt::NotEqual(r.near(), r.near(), r.eat(), r.eat()));
@@ -40,8 +40,8 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             IrStmt::Lt(_, _, _) => {
                 stmts.push(IrStmt::Lt(r.near(), r.near(), r.eat()));
             }
-            IrStmt::Let(_, _, _, _, _, _, _) => {
-                stmts.push(IrStmt::Let(r.near(), r.near(), r.eat(), r.eat(), r.eat(), r.eat(), r.eat()));
+            IrStmt::Let(_, _, _, _, _, _) => {
+                stmts.push(IrStmt::Let(r.near(), r.near(), r.eat(), r.eat(), r.eat(), r.eat()));
             }
             IrStmt::Gt(_, _, _) => {
                 stmts.push(IrStmt::Gt(r.near(), r.near(), r.eat()));

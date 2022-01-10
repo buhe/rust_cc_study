@@ -21,13 +21,13 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
     for s in &f.stmts {
       match s {
         IrStmt::Neg(t1, t2) => {
-          writeln!(w, "  sub {}, x0, {}", t2,t1)?;
+          writeln!(w, "  neg {} , {}", t2,t1)?;
         }
-        IrStmt::Ldc(x, reg) => {
-          writeln!(w, "  addi {}, x0, {}", reg, x)?; //todo
+        IrStmt::Ldc(x, t) => {
+          writeln!(w, "  li {}, {}", t, x)?;//todo
         }
         IrStmt::Ret(t) => {
-          writeln!(w, "  addi a0, {}, 0", t)?; // a0 is return value
+          writeln!(w, "  mv a0, {}", t)?; // a0 is return value
 
           writeln!(w, "  lw s0, 0(sp)")?;
           writeln!(w, "  lw s1, 4(sp)")?;
@@ -43,7 +43,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  lw s11, 44(sp)")?;
           writeln!(w, "  addi sp, sp, 56")?;
 
-          writeln!(w, "  jalr x0, x1, 0")?; //x1 is ra: return address
+          writeln!(w, "  ret")?;
         }
         IrStmt::Add(t1, t2, t) => {
           writeln!(w, "  add {} ,{} ,{}", t, t2, t1)?;
@@ -63,39 +63,37 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         IrStmt::Or(t1, t2, t)=> {
           // or t3,t1,t2 ; snez t3,t3
           writeln!(w, "  or {} ,{} ,{}", t, t2, t1)?;
-          writeln!(w, "  sltu {} ,x0 ,{}", t, t)?;
+          writeln!(w, "  snez {} ,{}", t, t)?;
         }
         IrStmt::And(t1, t2, t) => {
           // snez d, s1; sub d, zero, d; and d, d, s2; snez d, d;
-          writeln!(w, "  sltu {} ,x0 ,{}", t, t2)?;
+          writeln!(w, "  snez {} ,{}", t, t2)?;
           writeln!(w, "  sub {} ,zero ,{}", t, t)?;
           writeln!(w, "  and {} ,{} ,{}", t, t, t1)?;
-          writeln!(w, "  sltu {} ,x0 ,{}", t, t)?;
+          writeln!(w, "  snez {} ,{}", t, t)?;
         }
-        IrStmt::Equal(t1, t2, t, t3, t4) => {
+        IrStmt::Equal(t1, t2, t, t3) => {
           // seqz t1,t2	Set EQual to Zero : if t2 == 0 then set t1 to 1 else 0
           writeln!(w, "  sub {} ,{} ,{}", t, t2, t1)?;
-          writeln!(w, "  addi {} ,x0 ,1", t4)?;
-          writeln!(w, "  sltu {} ,{} ,{}", t3, t, t4)?;
+          writeln!(w, "  seqz {} ,{}", t3, t)?;
         }
         IrStmt::NotEqual(t1, t2, t, t3) => {
           // snez t1,t2	Set Not Equal to Zero : if t2 != 0 then set t1 to 1 else 0
           writeln!(w, "  sub {} ,{} ,{}", t, t2, t1)?;
-          writeln!(w, "  sltu {} ,x0 ,{}", t3, t)?;
+          writeln!(w, "  snez {} ,{}", t3, t)?
         }
         IrStmt::Lt(t1, t2, t) => {
           writeln!(w, "  slt {} ,{} ,{}", t, t2, t1)?;
         }
-        IrStmt::Let(t1, t2, t, t3, t4, t5, t6) => {
+        IrStmt::Let(t1, t2, t, t3, t4, t5) => {
           // eq
           writeln!(w, "  sub {} ,{} ,{}", t, t2, t1)?;
-          writeln!(w, "  addi {} ,x0 ,1", t6)?;
-          writeln!(w, "  sltu {} ,{} ,{}", t3, t, t6)?;
+          writeln!(w, "  seqz {} ,{}", t3, t)?;
           // lt
           writeln!(w, "  slt {} ,{} ,{}", t4, t2, t1)?;
           // or
           writeln!(w, "  or {} ,{} ,{}", t5, t3, t4)?;
-          writeln!(w, "  sltu {} ,x0 ,{}", t5, t5)?;
+          writeln!(w, "  snez {} ,{}", t5, t5)?;
         }
         IrStmt::Gt(t1, t2, t) => {// todo slt
           writeln!(w, "  sgt {} ,{} ,{}", t, t2, t1)?;
@@ -112,18 +110,16 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         }
         IrStmt::Assign(scope, id,t2) => {
           let s = table.get(scope, id);
-          writeln!(w, "  addi {} ,{}, 0", s.reg.as_ref().unwrap(), t2)?;
+          writeln!(w, "  mv {} ,{}", s.reg.as_ref().unwrap(), t2)?;
         },
         IrStmt::Ref(_scope,_id) => {
           // use
         },
         IrStmt::Beq(t,l) => {
-          // let l = bl.label();
-          writeln!(w, "  beq {} ,x0 ,{}", t, l)?;
+          writeln!(w, "  beqz {} ,{}", t, l)?;
         },
         IrStmt::Jmp(l) => {
-          // let l = bl.label();
-          writeln!(w, "  jal x0, {}", l)?;
+          writeln!(w, "  j {}", l)?;
         },
         IrStmt::Label(label) => {
           writeln!(w, "{}:", label)?;
@@ -156,7 +152,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  sw a7, 60(sp)")?;
           // args
           for pair in regs {
-            writeln!(w, "  addi {} ,{}, 0", pair.1, pair.0)?;
+            writeln!(w, "  mv {} ,{}", pair.1, pair.0)?;
           }
           // call f
           writeln!(w, "  call {}", label)?;
@@ -181,7 +177,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
 
           // return
           // tx = a0
-          writeln!(w, "  addi {} ,a0, 0", r)?;
+          writeln!(w, "  mv {} ,a0", r)?;
 
           writeln!(w, "  lw a0, 32(sp)")?;
         },
