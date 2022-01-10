@@ -181,9 +181,18 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
 
           writeln!(w, "  lw a0, 32(sp)")?;
         },
-        IrStmt::Load(_, _, _) => todo!(),
-        IrStmt::LoadSymbol(_,_) => todo!(),
-        IrStmt::DeclGlobal(_, _) => todo!(),
+        IrStmt::Load(reg, base, offset) => {
+          writeln!(w, "  lw {}, {}({})", reg, offset, base)?;
+        }
+        IrStmt::LoadSymbol(reg,vn) => {
+          writeln!(w, "  la {}, {}", reg, vn)?;
+        }
+        IrStmt::DeclGlobal(vn, val) => {
+          writeln!(w, ".data")?;
+          writeln!(w, ".global {}", vn)?;
+          writeln!(w, "{}:", vn)?;
+          writeln!(w, "  .word {}", val)?;
+        }
       }
     }
   }
