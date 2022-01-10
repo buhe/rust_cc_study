@@ -561,7 +561,14 @@ impl Parser {
             TokenType::Eof => break,
             TokenType::Int => { //type
               self._type(); // eat type
-              self.pos += 1; // eat id
+              let t = &self.tokens[self.pos];
+              match &t.ty {
+                  // expect id token
+                  TokenType::Ident(_id) => {
+                    self.pos += 1; // eat id
+                  }
+                  _ => self.bad_token("ident expected"),
+              }
               let t = &self.tokens[self.pos];
               match t.ty {
                 TokenType::LeftParen => {
@@ -574,7 +581,7 @@ impl Parser {
                 }
               }
             }
-            _ => self.bad_token("no func or gvar")
+            _ => self.bad_token("no func or global var")
           }
     }
     self.prog = Some(Prog { funcs, global_vars });
