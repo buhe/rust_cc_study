@@ -110,7 +110,7 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
     }
 }
 
-pub struct BasicBlock {
-   pub stmts: Vec<IrStmt>,
-   pub edge: Option<Box<BasicBlock>>,  
-}
+// pub struct BasicBlock {
+//    pub stmts: Vec<IrStmt>,
+//    pub edge: Option<Box<BasicBlock>>,  
+// }
