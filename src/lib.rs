@@ -19,7 +19,8 @@ pub fn run(path: String, output: &mut impl Write) -> Result<()> {
   let mut p = parsing(&t);
   println!("Prog: {:#?}", &p.0);
   let ir = ir::ast2ir(&p.0, &mut p.1);
-  println!("IR Prog: {:#?}", &ir);
+  println!("IR before dataflow op Prog: {:#?}", &ir);
   let ir = op(&ir, &mut p.1);
+  println!("IR Prog: {:#?}", &ir);
   codegen::write_asm(&ir,&mut p.1, output)
 }

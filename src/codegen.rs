@@ -2,7 +2,20 @@ use crate::{ir::*, symbols::{SymTab}};
 use std::io::{Result, Write};
 
 pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<()> {
+  for g in &p.global_vars {
+    writeln!(w, ".data")?;
+    match g {
+        IrStmt::DeclGlobal(vn, val) => {
+          
+          writeln!(w, ".global {}", vn)?;
+          writeln!(w, "{}:", vn)?;
+          writeln!(w, "  .word {}", val)?;
+        }
+        _ => unreachable!()
+    }
+  }
   for f in &p.funcs {
+    writeln!(w, ".text")?;
     writeln!(w, ".global {}", f.name)?;
     writeln!(w, "{}:", f.name)?;
     writeln!(w, "  addi sp, sp, -56")?;
@@ -187,12 +200,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         IrStmt::LoadSymbol(reg,vn) => {
           writeln!(w, "  la {}, {}", reg, vn)?;
         }
-        IrStmt::DeclGlobal(vn, val) => {
-          writeln!(w, ".data")?;
-          writeln!(w, ".global {}", vn)?;
-          writeln!(w, "{}:", vn)?;
-          writeln!(w, "  .word {}", val)?;
-        }
+        _ => unreachable!()
       }
     }
   }
