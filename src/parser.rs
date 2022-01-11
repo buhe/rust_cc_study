@@ -518,7 +518,7 @@ impl Parser {
 
   fn compound_statement(&mut self) -> Vec<BlockItem> {
     self.expect(TokenType::LeftBrace);
-    self.symbols.enter_scope();
+    
     let mut block_items = vec![];
     loop { // branch mutli stmt
         let stmt = self.block_item();
@@ -528,7 +528,7 @@ impl Parser {
         }
     }
     self.expect(TokenType::RightBrace);
-    self.symbols.leave_scope();
+    
     block_items
   }
 
@@ -537,11 +537,13 @@ impl Parser {
         // self.expect(TokenType::Int);
         let ident = self.identifier();
         self.symbols.put(ident.clone(), Symbol::new_fn(ident.clone()));
+        self.symbols.enter_scope();
         // self.expect(TokenType::Ident("main".to_string()));
         self.expect(TokenType::LeftParen);
         let params = self.parameter_list();
         self.expect(TokenType::RightParen);
         let body = self.compound_statement();
+        self.symbols.leave_scope();
         Func {
           name: ident.clone(),
           stmt: body,
