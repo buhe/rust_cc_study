@@ -39,6 +39,7 @@ pub struct Call {
 pub struct Decl {
   pub t: Type,
   pub name: String,
+  // multidimensional
   pub indexes: Vec<i32>,
   pub expr: Option<Expr>,
   pub scope: Vec<u32>,

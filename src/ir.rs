@@ -116,6 +116,8 @@ pub enum IrStmt {
   LoadSymbol(String, String),
   // var name val
   DeclGlobal(String, i32),
+  // var name, 
+  DeclGlobalArray(String, Vec<i32>),
 }
 
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
@@ -129,19 +131,25 @@ pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
     funcs.push(func);
   }
   for g in &p.global_vars {
-    if g.expr.is_some() {
+    if !g.indexes.is_empty() {
       let var_name = g.name.clone();
-      let val: i32;
-      let e = g.expr.as_ref().unwrap();
-      match e {
-          Expr::Unary(Unary::Int(i)) => {
-            val = *i;
-          }
-          _ => panic!("initializer element is not constant")
-      }
-      global_vars.push(IrStmt::DeclGlobal(var_name, val));
+      let indexes = g.indexes.clone();
+      global_vars.push(IrStmt::DeclGlobalArray(var_name, indexes));
     } else {
-      panic!("global var is not inited");
+        if g.expr.is_some() {
+        let var_name = g.name.clone();
+        let val: i32;
+        let e = g.expr.as_ref().unwrap();
+        match e {
+            Expr::Unary(Unary::Int(i)) => {
+              val = *i;
+            }
+            _ => panic!("initializer element is not constant")
+        }
+        global_vars.push(IrStmt::DeclGlobal(var_name, val));
+      } else {
+        panic!("global var is not inited");
+      }
     }
   }
   IrProg {

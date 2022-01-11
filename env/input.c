@@ -1,5 +1,5 @@
-int y = 4;
-int x = y + 2;
+int x[10][10][10];
+int y = 10;
 int main() {
-    return x;
+    return y;
 }

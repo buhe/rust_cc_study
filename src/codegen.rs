@@ -3,13 +3,18 @@ use std::io::{Result, Write};
 
 pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<()> {
   for g in &p.global_vars {
-    writeln!(w, ".data")?;
+    
     match g {
         IrStmt::DeclGlobal(vn, val) => {
-          
+          writeln!(w, ".data")?;
           writeln!(w, ".global {}", vn)?;
           writeln!(w, "{}:", vn)?;
           writeln!(w, "  .word {}", val)?;
+        }
+        IrStmt::DeclGlobalArray(vn, indexes) => {
+          let mut memory = 4;
+          indexes.iter().for_each(|e| memory *= e);
+          writeln!(w, "  .comm {},{},4", vn,memory)?
         }
         _ => unreachable!()
     }

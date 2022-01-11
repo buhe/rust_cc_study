@@ -377,6 +377,7 @@ impl Parser {
             let t = &self.tokens[self.pos];
             if let TokenType::Num(n) = t.ty {
               indexes.push(n);
+              self.pos += 1; // eat index
             } else {
                 self.bad_token("expected int")
             }
