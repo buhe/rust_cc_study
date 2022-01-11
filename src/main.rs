@@ -3,7 +3,7 @@ use std::fs::{File, self};
 
 fn main() -> std::io::Result<()> {
     let mut f = File::create("asm.S")?;
-    lang_study::run("int func(int x, int y) { return x * y; } int main() { return func(3, 2); }".to_string(), &mut f)?;
+    lang_study::run("int x = 2029; int main() { return x; }".to_string(), &mut f)?;
     println!("asm:\n {}", fs::read_to_string("asm.S")?);
     Ok(())
 }
