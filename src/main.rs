@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn array_1() {
-        lang_study::run("int x[10]; int main() { int y[10]; return 0; }".to_string(), 
+        lang_study::run("int x[10][10]; int main() { int y[10]; x[10][1];return 0; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 }

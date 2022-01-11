@@ -309,11 +309,22 @@ impl Parser {
               })
             }
             TokenType::LeftBrack => {
+              // todo
+              // support
               let scope = self.symbols.extis(&self.symbols.current_scope, &id).1;
-              self.expect(TokenType::LeftBrack);
-              let e = self.expr();
-              self.expect(TokenType::RightBrack);
-              Unary::Index(Box::new(scope), IndexExpr{name: name,index: Box::new(e)})
+              let mut e_list = vec![];
+              loop {
+                  let t = &self.tokens[self.pos];
+                  match &t.ty {
+                      TokenType::LeftBrack => {
+                        self.expect(TokenType::LeftBrack);
+                        e_list.push(self.expr());
+                        self.expect(TokenType::RightBrack);
+                      }
+                      _ => break
+                  }
+              }
+              Unary::Index(Box::new(scope), IndexExpr{name: name,index: e_list})
             }
             _ => {
               let scope = self.symbols.extis(&self.symbols.current_scope, &id).1;

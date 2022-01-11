@@ -517,11 +517,15 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
         }
         Unary::Index(env, i) => {
           let name = &i.name;
+          // expr(tunnel, stmts, &i.index, table, bl, r);
+          // let index_reg = r.near();
+          let base_reg = r.eat();
           // use var
           let var = table.extis(env, name);
           assert!(var.0);
           if var.1 == vec![1] {
-            
+            stmts.push(IrStmt::LoadSymbol(base_reg.clone(), name.clone()));
+            stmts.push(IrStmt::Load(r.eat(),base_reg.clone(), 0));
             // global var
             
           } else {

@@ -1,5 +1,5 @@
-int x[10][10][10];
-int y = 10;
+int x[10];
 int main() {
-    return y;
+    int z = 1 + 3 * 2;
+    return x[z];
 }

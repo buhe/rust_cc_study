@@ -47,7 +47,7 @@ pub struct Decl {
 #[derive(Debug, Clone)]
 pub struct  IndexExpr {
   pub name: String,
-  pub index: Box<Expr>,
+  pub index: Vec<Expr>,
 }
 #[derive(Debug, Clone)]
 pub enum BlockItem {
