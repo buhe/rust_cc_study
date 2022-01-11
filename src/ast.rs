@@ -39,8 +39,14 @@ pub struct Call {
 pub struct Decl {
   pub t: Type,
   pub name: String,
+  pub indexes: Vec<i32>,
   pub expr: Option<Expr>,
   pub scope: Vec<u32>,
+}
+#[derive(Debug, Clone)]
+pub struct  IndexExpr {
+  pub name: String,
+  pub index: Box<Expr>,
 }
 #[derive(Debug, Clone)]
 pub enum BlockItem {
@@ -92,4 +98,5 @@ pub enum Unary {
   Primary(Box<Expr>),
   Identifier(Box<Vec<u32>>, Box<String>),
   Call(Call),
+  Index(Box<Vec<u32>>, IndexExpr),
 }

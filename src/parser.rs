@@ -308,9 +308,16 @@ impl Parser {
                 params,
               })
             }
+            TokenType::LeftBrack => {
+              let scope = self.symbols.extis(&self.symbols.current_scope, &id).1;
+              self.expect(TokenType::LeftBrack);
+              let e = self.expr();
+              self.expect(TokenType::RightBrack);
+              Unary::Index(Box::new(scope), IndexExpr{name: name,index: Box::new(e)})
+            }
             _ => {
               let scope = self.symbols.extis(&self.symbols.current_scope, &id).1;
-              Unary::Identifier(Box::new(scope),Box::new(id.clone()))
+              Unary::Identifier(Box::new(scope),Box::new(name))
             }
         }
       }
@@ -353,10 +360,32 @@ impl Parser {
   fn decl(&mut self) -> Decl { // decl is special assign then add assign ir.
     let t = self._type();
     let name = self.identifier();
+    let indexes = self.index();
     let expr = self.decl_expr();
     let scope = self.symbols.current_scope.clone();
     self.symbols.put(name.clone(), Symbol::new(name.clone()));  
-    Decl { t, name, expr, scope }
+    Decl { t, name, indexes, expr, scope }
+  }
+
+  fn index(&mut self) -> Vec<i32> {
+    let mut indexes = vec![];
+    loop {
+        let t = &self.tokens[self.pos];
+        match t.ty {
+          TokenType::LeftBrack => {
+            self.expect(TokenType::LeftBrack);
+            let t = &self.tokens[self.pos];
+            if let TokenType::Num(n) = t.ty {
+              indexes.push(n);
+            } else {
+                self.bad_token("expected int")
+            }
+            self.expect(TokenType::RightBrack);
+          }
+          _ => break
+        }
+    }
+    indexes
   }
   
   fn stmt(&mut self) -> Stmt {

@@ -189,6 +189,10 @@ fn block(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, ta
           stmt(tunnel, stmts,s,table, bl, r);
         },
         BlockItem::Decl(d) => {
+          if !d.indexes.is_empty() {
+            // temp array decl
+
+          }
           if let Some(ex) = &d.expr { //when assign
             let name = &d.name;
             let scope = &d.scope;
@@ -502,6 +506,19 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           }
           assert!(tunnel.is_match(label));
           stmts.push(IrStmt::Call(params, label.to_string(), r.eat()));
+        }
+        Unary::Index(env, i) => {
+          let name = &i.name;
+          // use var
+          let var = table.extis(env, name);
+          assert!(var.0);
+          if var.1 == vec![1] {
+            
+            // global var
+            
+          } else {
+            // 
+          }
         }
     }
 }

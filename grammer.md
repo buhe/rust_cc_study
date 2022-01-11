@@ -675,3 +675,38 @@ rest
     : '(' parameter_list ')'
     | ('=' expression)? ';'
 ```
+
+### step11
+```
+declaration
+    : type Identifier ('[' Integer ']')* ('=' expression)? ';'
+
+
+postfix
+    : primary
+    | Identifier '(' expression_list ')'
+    | postfix '[' expression ']'
+```
+```
+unary
+    | ('-'|'~'|'!') unary
+    | Identifier '(' expression_list ')'
+    : Integer
+    | '(' expression ')'
+    | Identifier
+    | Identifier '[' expression ']'
+```
+- A: ay | ab
+  A: aM
+  M: y | b
+
+```
+unary
+    | ('-'|'~'|'!') unary
+    | Identifier rest
+    : Integer
+    | '(' expression ')'
+
+rest
+    '(' expression_list ')' | < | '[' expression ']'
+```

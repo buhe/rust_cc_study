@@ -38,6 +38,8 @@ pub enum TokenType {
     Break,
     Eof,
     Comma,          // ,
+    LeftBrack,      // [
+    RightBrack,     // ]
 }
 
 // Character Kind
@@ -74,6 +76,8 @@ impl TokenType {
             ':' => Some(Colon),
             '?' => Some(Ques),
             ',' => Some(Comma),
+            '[' => Some(LeftBrack),
+            ']' => Some(RightBrack),
             _ => None,
         }
     }

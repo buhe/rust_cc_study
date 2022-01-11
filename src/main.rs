@@ -142,8 +142,14 @@ mod tests {
     }
 
     #[test]
-    fn g_1() {
+    fn gvar_1() {
         lang_study::run("int x = 2021; int main() { return x; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+    #[test]
+    fn array_1() {
+        lang_study::run("int x[10]; int main() { int y[10]; return 0; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
 }
