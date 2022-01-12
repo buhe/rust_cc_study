@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 #[derive(Debug, Clone)]
 pub struct Prog {
   pub funcs: Vec<Func>,
@@ -40,14 +42,14 @@ pub struct Decl {
   pub t: Type,
   pub name: String,
   // multidimensional
-  pub indexes: Vec<i32>,
+  pub indexes: VecDeque<i32>,
   pub expr: Option<Expr>,
   pub scope: Vec<u32>,
 }
 #[derive(Debug, Clone)]
 pub struct  IndexExpr {
   pub name: String,
-  pub index: Vec<Expr>,
+  pub index: VecDeque<i32>,
 }
 #[derive(Debug, Clone)]
 pub enum BlockItem {

@@ -1,4 +1,4 @@
-use std::{collections::{HashMap, hash_map::Entry}};
+use std::{collections::{HashMap, hash_map::Entry, VecDeque}};
 
 #[derive(Debug)]
 pub struct SymTab {
@@ -77,17 +77,19 @@ pub struct Symbol {
     pub alloc_virtual_reg: bool,
     pub alloc_phy_reg: bool,
     pub is_func: bool,
+    pub array_range: VecDeque<i32>,
 }
 
 impl Symbol {
 
-    pub fn new(name: String) -> Self {
+    pub fn new(name: String, array_range: VecDeque<i32>) -> Self {
         Self{
             name,
             reg: None,
             alloc_virtual_reg: false,
             alloc_phy_reg: false,
             is_func: false,
+            array_range,
         }
     }
 
@@ -98,11 +100,14 @@ impl Symbol {
             alloc_virtual_reg: false,
             alloc_phy_reg: false,
             is_func: true,
+            array_range: VecDeque::new(),
         }
     }
+
 }
 
 mod tests {
+
     // use crate::symbols::Symbol;
 
     // use super::SymTab;
@@ -124,7 +129,7 @@ mod tests {
         s.enter_scope();
         println!("{:?}", s.current_scope);
         println!("{:?}", s.table);
-        s.put("x".to_string(), crate::symbols::Symbol::new("x".to_string()));
+        s.put("x".to_string(), crate::symbols::Symbol::new("x".to_string(), std::collections::VecDeque::new()));
         s.leave_scope();
         println!("{:?}", s.current_scope);
         println!("{:?}", s.table);
@@ -136,7 +141,7 @@ mod tests {
         s.enter_scope();
         println!("{:?}", s.current_scope);
         println!("{:?}", s.table);
-        s.put("x".to_string(), crate::symbols::Symbol::new("x".to_string()));
+        s.put("x".to_string(), crate::symbols::Symbol::new("x".to_string(), std::collections::VecDeque::new()));
         s.enter_scope();
         println!("current scope is {:?}", s.current_scope);
         let r = s.extis(&s.current_scope, &"x".to_string());

@@ -117,7 +117,9 @@ pub enum IrStmt {
   // var name val
   DeclGlobal(String, i32),
   // var name, 
-  DeclGlobalArray(String, Vec<i32>),
+  DeclGlobalArray(String, VecDeque<i32>),
+  // reg size
+  Alloc(String, u32),
 }
 
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
@@ -523,13 +525,24 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           // use var
           let var = table.extis(env, name);
           assert!(var.0);
+          // off = (range + index) * 4
+          let mut offset = 0;
+          let mut range = table.get(env, name).array_range.clone();
+          for index in &i.index {
+            range.pop_back().unwrap(); // low -> high
+            let mut result = 1;
+            range.iter().for_each(|r| result *= r);
+            offset += index * result;
+          }
+          offset *= 4;
           if var.1 == vec![1] {
             stmts.push(IrStmt::LoadSymbol(base_reg.clone(), name.clone()));
-            stmts.push(IrStmt::Load(r.eat(),base_reg.clone(), 0));
+            stmts.push(IrStmt::Load(r.eat(),base_reg.clone(), offset.try_into().unwrap()));
             // global var
             
           } else {
-            // 
+            // temp var
+            stmts.push(IrStmt::Alloc(r.eat(),offset.try_into().unwrap()));
           }
         }
     }

@@ -20,6 +20,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
     }
   }
   for f in &p.funcs {
+    let mut alloc_size = 0;
     writeln!(w, ".text")?;
     writeln!(w, ".global {}", f.name)?;
     writeln!(w, "{}:", f.name)?;
@@ -59,7 +60,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  lw s9, 36(sp)")?;
           writeln!(w, "  lw s10, 40(sp)")?;
           writeln!(w, "  lw s11, 44(sp)")?;
-          writeln!(w, "  addi sp, sp, 56")?;
+          writeln!(w, "  addi sp, sp, {}", alloc_size + 56)?;
 
           writeln!(w, "  ret")?;
         }
@@ -204,6 +205,11 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
         }
         IrStmt::LoadSymbol(reg,vn) => {
           writeln!(w, "  la {}, {}", reg, vn)?;
+        }
+        IrStmt::Alloc(reg, size) => {
+          alloc_size += size;
+          writeln!(w, "  addi sp, sp, -{}", size)?;
+          writeln!(w, "  addi {}, sp, 0", reg)?;
         }
         _ => unreachable!()
       }

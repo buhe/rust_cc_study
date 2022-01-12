@@ -92,7 +92,10 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             IrStmt::LoadSymbol(_, v) => stmts.push(IrStmt::LoadSymbol(r.eat(), v.clone())),
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
             IrStmt::Param(_,_,_) | IrStmt::DeclGlobal(_,_) | IrStmt::DeclGlobalArray(_,_) => unreachable!(),
+            IrStmt::Alloc(_, size) => {
+                stmts.push(IrStmt::Alloc(r.eat(), *size));
             }
+        }
         }
         for s in &f.params {
          match s {

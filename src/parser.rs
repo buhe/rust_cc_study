@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::ast::*;
 use crate::lexer::{Token, TokenType};
 use crate::symbols::{SymTab, Symbol};
@@ -312,13 +314,20 @@ impl Parser {
               // todo
               // support
               let scope = self.symbols.extis(&self.symbols.current_scope, &id).1;
-              let mut e_list = vec![];
+              let mut e_list = VecDeque::new();
               loop {
                   let t = &self.tokens[self.pos];
                   match &t.ty {
                       TokenType::LeftBrack => {
                         self.expect(TokenType::LeftBrack);
-                        e_list.push(self.expr());
+                        let e = self.expr();
+                        match e {
+                            Expr::Unary(Unary::Int(num)) => {
+                              e_list.push_front(num);
+                            }
+                            _ => self.bad_token("index only support number.")
+                        }
+                        
                         self.expect(TokenType::RightBrack);
                       }
                       _ => break
@@ -374,12 +383,12 @@ impl Parser {
     let indexes = self.index();
     let expr = self.decl_expr();
     let scope = self.symbols.current_scope.clone();
-    self.symbols.put(name.clone(), Symbol::new(name.clone()));  
+    self.symbols.put(name.clone(), Symbol::new(name.clone(), indexes.clone()));  
     Decl { t, name, indexes, expr, scope }
   }
 
-  fn index(&mut self) -> Vec<i32> {
-    let mut indexes = vec![];
+  fn index(&mut self) -> VecDeque<i32> {
+    let mut indexes = VecDeque::new();
     loop {
         let t = &self.tokens[self.pos];
         match t.ty {
@@ -387,7 +396,7 @@ impl Parser {
             self.expect(TokenType::LeftBrack);
             let t = &self.tokens[self.pos];
             if let TokenType::Num(n) = t.ty {
-              indexes.push(n);
+              indexes.push_front(n);//first high
               self.pos += 1; // eat index
             } else {
                 self.bad_token("expected int")
@@ -510,10 +519,10 @@ impl Parser {
       _ => {
         let _t = self._type();
         let id = self.identifier();
+        let indexes = self.index();
         let param = Param::new(self.symbols.current_scope.clone(),id);
-        self.symbols.put(param.name.clone(), Symbol::new(param.name.clone()));
+        self.symbols.put(param.name.clone(), Symbol::new(param.name.clone(), indexes));
         params.push(param);
-        //todo scope
         
         loop {
             let t = &self.tokens[self.pos];
@@ -522,8 +531,9 @@ impl Parser {
                   self.pos += 1; //eat ,
                   let _t = self._type();
                   let id = self.identifier();
+                  let indexes = self.index();
                   let param = Param::new(self.symbols.current_scope.clone(),id);
-                  self.symbols.put(param.name.clone(), Symbol::new(param.name.clone()));
+                  self.symbols.put(param.name.clone(), Symbol::new(param.name.clone(), indexes));
                   params.push(param);
                 }
                 _ => break,
