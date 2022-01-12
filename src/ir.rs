@@ -203,7 +203,7 @@ fn block(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, ta
           let scope = &d.scope;
           if !d.indexes.is_empty() {
             // temp array decl
-            let mut size = 1;
+            let mut size = 4;
             d.indexes.iter().for_each(|i| size *= i);
             let t = r.eat();
             // alloc reg
