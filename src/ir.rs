@@ -547,7 +547,7 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           let mut offset = 0;
           let mut range = table.get(env, name).array_range.clone();
           for index in &i.index {
-            range.pop_back().unwrap(); // low -> high
+            range.pop_front().unwrap(); // high -> low
             let mut result = 1;
             range.iter().for_each(|r| result *= r);
             offset += index * result;

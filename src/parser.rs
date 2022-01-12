@@ -323,7 +323,7 @@ impl Parser {
                         let e = self.expr();
                         match e {
                             Expr::Unary(Unary::Int(num)) => {
-                              e_list.push_front(num);
+                              e_list.push_back(num);
                             }
                             _ => self.bad_token("index only support number.")
                         }
@@ -396,7 +396,7 @@ impl Parser {
             self.expect(TokenType::LeftBrack);
             let t = &self.tokens[self.pos];
             if let TokenType::Num(n) = t.ty {
-              indexes.push_front(n);//first high
+              indexes.push_back(n);//first high
               self.pos += 1; // eat index
             } else {
                 self.bad_token("expected int")

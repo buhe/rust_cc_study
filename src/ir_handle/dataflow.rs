@@ -94,14 +94,15 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             IrStmt::LoadSymbol(_, v) => {
                 // todo!! alloc phy reg
                 let entry = table.entry(&vec![1], &v);
+                let t = r.eat();
                 entry.and_modify(|s| {
                     if s.alloc_phy_reg == false {
-                        let t = r.eat();
+                        
                         s.reg = Some(t.to_string());
                         s.alloc_phy_reg = true; 
                     } 
                 });
-                stmts.push(IrStmt::LoadSymbol(r.eat(), v.clone()))
+                stmts.push(IrStmt::LoadSymbol(t, v.clone()))
             }
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
             IrStmt::Param(_,_,_) | IrStmt::DeclGlobal(_,_) | IrStmt::DeclGlobalArray(_,_) => unreachable!(),
