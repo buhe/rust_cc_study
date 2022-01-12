@@ -110,16 +110,16 @@ pub enum IrStmt {
   Param(Vec<u32>, String, String),
   // params (tmp reg, arg reg) label return reg
   Call(Vec<(String, String)>, String, String),
-  // reg, base reg, num
-  Load(String, String, u32),
+  // scope,name,reg, base reg, num
+  Load(Vec<u32>, String, String, String, u32),
   // reg, global var name
   LoadSymbol(String, String),
   // var name val
   DeclGlobal(String, i32),
   // var name, 
   DeclGlobalArray(String, VecDeque<i32>),
-  // reg size
-  Alloc(String, u32),
+  // scope name reg size
+  Alloc(Vec<u32>, String, String, u32),
 }
 
 pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
@@ -138,7 +138,7 @@ pub fn ast2ir(p: &Prog, s: &mut SymTab) -> IrProg {
       let indexes = g.indexes.clone();
       global_vars.push(IrStmt::DeclGlobalArray(var_name, indexes));
     } else {
-        if g.expr.is_some() {
+      if g.expr.is_some() {
         let var_name = g.name.clone();
         let val: i32;
         let e = g.expr.as_ref().unwrap();
@@ -199,13 +199,26 @@ fn block(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>,bts: &Vec<BlockItem>, ta
           stmt(tunnel, stmts,s,table, bl, r);
         },
         BlockItem::Decl(d) => {
+          let name = &d.name;
+          let scope = &d.scope;
           if !d.indexes.is_empty() {
             // temp array decl
-
+            let mut size = 1;
+            d.indexes.iter().for_each(|i| size *= i);
+            let t = r.eat();
+            // alloc reg
+            let entry = table.entry(scope, name);
+              entry.and_modify(|s| {
+              if s.alloc_virtual_reg == false {
+                s.reg = Some(t.to_string());
+                s.alloc_virtual_reg = true; 
+              } 
+            });
+            // alloc c 
+            stmts.push(IrStmt::Alloc(scope.clone(),name.clone(), t,size.try_into().unwrap()));
           }
           if let Some(ex) = &d.expr { //when assign
-            let name = &d.name;
-            let scope = &d.scope;
+       
             expr(tunnel, stmts, ex, table, bl, r);
             let t2 = r.near();// todo, noy use near api
              // alloc reg
@@ -494,8 +507,16 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           if var.1 == vec![1] {
             let reg = r.eat();
             // global var
-            stmts.push(IrStmt::LoadSymbol(r.eat(), name.clone()));
-            stmts.push(IrStmt::Load(reg.clone(), r.near(), 0));
+            stmts.push(IrStmt::LoadSymbol(reg.clone(), name.clone()));
+                  // alloc reg
+            let entry = table.entry(&vec![1], name);
+            entry.and_modify(|s| {
+              if s.alloc_virtual_reg == false {
+                s.reg = Some(reg.clone());
+                s.alloc_virtual_reg = true;
+              } 
+            });
+            stmts.push(IrStmt::Load(vec![1],name.clone(),r.eat(), reg.clone(), 0));
             r.put_near(reg.clone());
           } else {
             let reg = table.get(&var.1, name).reg.as_ref().unwrap();
@@ -519,9 +540,6 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
         }
         Unary::Index(env, i) => {
           let name = &i.name;
-          // expr(tunnel, stmts, &i.index, table, bl, r);
-          // let index_reg = r.near();
-          let base_reg = r.eat();
           // use var
           let var = table.extis(env, name);
           assert!(var.0);
@@ -536,13 +554,23 @@ fn unary(tunnel: &mut ArgTunnel,stmts: &mut Vec<IrStmt>, u: &Unary, table: &mut 
           }
           offset *= 4;
           if var.1 == vec![1] {
+            let base_reg = r.eat();
             stmts.push(IrStmt::LoadSymbol(base_reg.clone(), name.clone()));
-            stmts.push(IrStmt::Load(r.eat(),base_reg.clone(), offset.try_into().unwrap()));
+             // alloc reg
+            let entry = table.entry(&vec![1], name);
+            entry.and_modify(|s| {
+              if s.alloc_virtual_reg == false {
+                s.reg = Some(base_reg.clone());
+                s.alloc_virtual_reg = true;
+              } 
+            });
+            stmts.push(IrStmt::Load(vec![1],name.clone(),r.eat(),base_reg.clone(), offset.try_into().unwrap()));
             // global var
             
           } else {
             // temp var
-            stmts.push(IrStmt::Alloc(r.eat(),offset.try_into().unwrap()));
+            let base_reg = table.get(&var.1, name).reg.as_ref().unwrap();
+            stmts.push(IrStmt::Load(var.1,name.clone(),r.eat(),base_reg.clone(), offset.try_into().unwrap()));
           }
         }
     }

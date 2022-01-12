@@ -12,9 +12,13 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
           writeln!(w, "  .word {}", val)?;
         }
         IrStmt::DeclGlobalArray(vn, indexes) => {
-          let mut memory = 4;
+          let mut memory = 1;
           indexes.iter().for_each(|e| memory *= e);
-          writeln!(w, "  .comm {},{},4", vn,memory)?
+          // writeln!(w, "  .comm {},{},4", vn,memory)?
+          writeln!(w, ".bss")?;
+          writeln!(w, ".global {}", vn)?;
+          writeln!(w, "{}:", vn)?;
+          writeln!(w, "  .word {}", memory)?;
         }
         _ => unreachable!()
     }
@@ -200,13 +204,13 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
 
           writeln!(w, "  lw a0, 32(sp)")?;
         },
-        IrStmt::Load(reg, base, offset) => {
+        IrStmt::Load(_,_,reg, base, offset) => {
           writeln!(w, "  lw {}, {}({})", reg, offset, base)?;
         }
         IrStmt::LoadSymbol(reg,vn) => {
           writeln!(w, "  la {}, {}", reg, vn)?;
         }
-        IrStmt::Alloc(reg, size) => {
+        IrStmt::Alloc(_,_,reg, size) => {
           alloc_size += size;
           writeln!(w, "  addi sp, sp, -{}", size)?;
           writeln!(w, "  addi {}, sp, 0", reg)?;

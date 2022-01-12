@@ -84,16 +84,38 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
                 }
                 stmts.push(IrStmt::Call(args, l.to_string(), r.eat()));
             }
-            IrStmt::Load(_, _, n) => {
-                let near = r.near();
+            IrStmt::Load(scope,name,_, _, n) => {
+                // let near = r.near();
+                // get phy reg
+                let reg = table.get(&scope, &name).reg.as_ref().unwrap();
                 let eat = r.eat();
-                stmts.push(IrStmt::Load(eat, near, *n))}
+                stmts.push(IrStmt::Load(scope.clone(),name.clone(),eat, reg.clone(), *n))}
             ,
-            IrStmt::LoadSymbol(_, v) => stmts.push(IrStmt::LoadSymbol(r.eat(), v.clone())),
+            IrStmt::LoadSymbol(_, v) => {
+                // todo!! alloc phy reg
+                let entry = table.entry(&vec![1], &v);
+                entry.and_modify(|s| {
+                    if s.alloc_phy_reg == false {
+                        let t = r.eat();
+                        s.reg = Some(t.to_string());
+                        s.alloc_phy_reg = true; 
+                    } 
+                });
+                stmts.push(IrStmt::LoadSymbol(r.eat(), v.clone()))
+            }
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
             IrStmt::Param(_,_,_) | IrStmt::DeclGlobal(_,_) | IrStmt::DeclGlobalArray(_,_) => unreachable!(),
-            IrStmt::Alloc(_, size) => {
-                stmts.push(IrStmt::Alloc(r.eat(), *size));
+            IrStmt::Alloc(scope,name,_, size) => {
+                // todo!! alloc phy reg
+                let entry = table.entry(&scope, &name);
+                entry.and_modify(|s| {
+                    if s.alloc_phy_reg == false {
+                        let t = r.eat();
+                        s.reg = Some(t.to_string());
+                        s.alloc_phy_reg = true; 
+                    } 
+                });
+                stmts.push(IrStmt::Alloc(scope.clone(),name.clone() ,r.eat(), *size));
             }
         }
         }
