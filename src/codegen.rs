@@ -7,18 +7,20 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
     match g {
         IrStmt::DeclGlobal(vn, val) => {
           writeln!(w, ".data")?;
+          writeln!(w, ".align	2")?;
           writeln!(w, ".global {}", vn)?;
           writeln!(w, "{}:", vn)?;
           writeln!(w, "  .word {}", val)?;
         }
         IrStmt::DeclGlobalArray(vn, indexes) => {
-          let mut memory = 1;
+          let mut memory = 4;
           indexes.iter().for_each(|e| memory *= e);
-          // writeln!(w, "  .comm {},{},4", vn,memory)?
-          writeln!(w, ".bss")?;
-          writeln!(w, ".global {}", vn)?;
-          writeln!(w, "{}:", vn)?;
-          writeln!(w, "  .word {}", memory)?;
+          writeln!(w, ".text")?;
+          writeln!(w, "  .comm {},{},4", vn,memory)?
+          // writeln!(w, ".bss")?;
+          // writeln!(w, ".global {}", vn)?;
+          // writeln!(w, "{}:", vn)?;
+          // writeln!(w, "  .word {}", memory)?;
         }
         _ => unreachable!()
     }
@@ -26,6 +28,7 @@ pub fn write_asm(p: &IrProg ,table: &mut SymTab, w: &mut impl Write) -> Result<(
   for f in &p.funcs {
     let mut alloc_size = 0;
     writeln!(w, ".text")?;
+    writeln!(w, ".align	2")?;
     writeln!(w, ".global {}", f.name)?;
     writeln!(w, "{}:", f.name)?;
     writeln!(w, "  addi sp, sp, -56")?;
