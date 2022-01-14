@@ -152,4 +152,16 @@ mod tests {
         lang_study::run("int x[10][10]; int main() { int y[10]; x[9][1];return 0; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+
+    #[test]
+    fn array_2() {
+        lang_study::run("int x[10][10]; int main() { x[9][1] = 5;return x[9][1]; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
+
+    #[test]
+    fn array_3() {
+        lang_study::run("int x[10][10]; int main() { return x[9][1] + x[8][2]; }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

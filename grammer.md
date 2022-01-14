@@ -710,3 +710,9 @@ unary
 rest
     '(' expression_list ')' | < | '[' expression ']'
 ```
+赋值数组，改变这个产生式
+```
+assignment
+    : conditional
+    | Identifier ('[' expression ']')* '=' expression
+```
