@@ -164,4 +164,19 @@ mod tests {
         lang_study::run("int x[10][10]; int main() { return x[9][1] + x[8][2]; }".to_string(), 
         &mut std::io::stdout()).unwrap();
     }
+    #[test]
+    fn ra_1() {
+        lang_study::run("int gcd(int a, int b) {
+                                while (a != 0) {
+                                    int c;
+                                    c = b % a;
+                                    b = a;
+                                    a = 1;
+                                    a = 2;
+                                    a = c;
+                                }
+                                return b;
+                            }".to_string(), 
+        &mut std::io::stdout()).unwrap();
+    }
 }

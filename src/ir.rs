@@ -104,6 +104,7 @@ pub enum IrStmt {
   Ref(Vec<u32>, String),
   // reg label
   Beq(String, String),
+  // jump label
   Jmp(String),
   Label(String),
   // scope var name func name

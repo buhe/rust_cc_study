@@ -1,9 +1,34 @@
+
 use crate::{ir::{IrStmt, IrProg, IrFunc}, regeister::Regeister, symbols::SymTab};
 
 pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
     let mut r = Regeister::init();
     let mut funcs = vec![];
     for f in &p.funcs {
+        let mut basic_blocks: Vec<BasicBlock> = vec![];
+        let mut first = BasicBlock::new();
+        let mut has_c = false;
+        for s in &f.stmts {
+            match s {
+                IrStmt::Jmp(_) | IrStmt::Beq(_,_) | IrStmt::Ret(_) | IrStmt::Label(_)=> {
+                    if has_c {
+                        basic_blocks.push(first);
+                        first = BasicBlock::new();
+                        
+                    }
+                }
+                IrStmt::Ref(_,_) => {
+                    has_c = false;
+                }
+                _ => {
+                    has_c = true;
+                }
+            }
+            first.stmts.push(s);
+        }
+        // last
+        basic_blocks.push(first);
+        println!("bb:\n{:?}", basic_blocks);
         let mut stmts: Vec<IrStmt> = Vec::new();
         for s in &f.stmts {
          match s {
@@ -107,7 +132,7 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
             IrStmt::Jmp(_) | IrStmt::Label(_) => {stmts.push(s.clone());}
             IrStmt::Param(_,_,_) | IrStmt::DeclGlobal(_,_) | IrStmt::DeclGlobalArray(_,_) => unreachable!(),
             IrStmt::Alloc(scope,name,_, size) => {
-                // todo!! alloc phy reg
+                // alloc phy reg
                 let entry = table.entry(&scope, &name);
                 entry.and_modify(|s| {
                     if s.alloc_phy_reg == false {
@@ -138,8 +163,26 @@ pub fn dataflow(p: &IrProg, table: &mut SymTab) -> IrProg {
         funcs, global_vars: p.global_vars.to_owned()
     }
 }
+/*
+    1. 除出口语句外基本块中不含任何的 Branch、Beqz（条件为假时跳转）、Bnez（条件为真时跳转）或者 Return 等跳转语句（但可以包含 Call 语句）。
+    2. 除入口语句外基本块中不含任何的 Label 标记，即不能跳转到基本块中间。
+    3. 在满足前两条的前提下含有最多的连续语句，即基本块的头尾再纳入一条语句将会违反上面两条规则。
+*/
+/*
+1. 当遇到一个 Label 标记而且存在跳转语句跳转到这个行号时。
+2. 当遇到 Branch、CondBranch 或者 Return 等跳转语句时。
+*/
+#[derive(Debug)]
+pub struct BasicBlock<'a> {
+   pub stmts: Vec<&'a IrStmt>,
+   pub edges: Vec<&'a BasicBlock<'a>>,  // from none,branch,cond branch
+}
 
-// pub struct BasicBlock {
-//    pub stmts: Vec<IrStmt>,
-//    pub edge: Option<Box<BasicBlock>>,  
-// }
+impl<'a> BasicBlock<'a> {
+    fn new() -> Self {
+        Self {
+            stmts: vec![],
+            edges: vec![],
+        }
+    }
+}
